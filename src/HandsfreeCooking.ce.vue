@@ -732,9 +732,9 @@ export default {
 <style>
 :host {
   --hf-color-bg: #ffffff;
-  --hf-color-text: #1a1a1a;
-  --hf-color-primary: #003da5;
-  --hf-color-primary-hover: #002d7a;
+  --hf-color-text: #00000;
+  --hf-color-primary: #000000;
+  --hf-color-primary-hover: #000000;
   --hf-color-error: #d32f2f;
   --hf-color-border: #cccccc;
   --hf-spacing-xxs: 4px;
@@ -818,11 +818,13 @@ export default {
 }
 
 .hf-button--solid:hover {
-  background: var(--hf-color-primary-hover);
+  background: var(--hf-color-bg);
+  color: var(--hf-color-primary);
 }
 
 .hf-button--handsfree {
-  padding: var(--hf-spacing-xs) var(--hf-spacing-l);
+  padding: var(--hf-spacing-m) var(--hf-spacing-l);
+  font-size: var(--hf-font-size-large);
 }
 
 /* ---- Icons ---- */
@@ -959,7 +961,7 @@ export default {
 .hf-headline__title {
   text-transform: uppercase;
   font-weight: bold;
-  font-size: var(--hf-font-size-large);
+  font-size: var(--hf-font-size-base);
   margin-left: var(--hf-spacing-xxs);
 }
 
@@ -1097,7 +1099,7 @@ export default {
 .hf-vote {
   display: flex;
   gap: 0;
-  margin: var(--hf-spacing-xs) 0;
+  margin: var(--hf-spacing-xs) 0 var(--hf-spacing-m);
 }
 
 .hf-vote .hf-button {
