@@ -732,16 +732,16 @@ export default {
 <style>
 :host {
   --hf-color-bg: #ffffff;
-  --hf-color-text: #00000;
+  --hf-color-text: #000000;
   --hf-color-primary: #000000;
   --hf-color-primary-hover: #000000;
-  --hf-color-error: #d32f2f;
-  --hf-color-border: #cccccc;
+  --hf-color-error: #cc0033;
+  --hf-color-border: #d9d9d9;
   --hf-spacing-xxs: 4px;
   --hf-spacing-xs: 8px;
-  --hf-spacing-s: 12px;
-  --hf-spacing-m: 16px;
-  --hf-spacing-l: 24px;
+  --hf-spacing-s: 16px;
+  --hf-spacing-sm: 24px;
+  --hf-spacing-m: 32px;
   --hf-font-family: inherit;
   --hf-font-size-base: 16px;
   --hf-font-size-small: 14px;
@@ -772,34 +772,43 @@ export default {
 .hf-intro-row {
   display: flex;
   align-items: center;
-  margin-bottom: var(--hf-spacing-xs);
+  margin-bottom: var(--hf-spacing-s);
 }
 
 .hf-intro-label {
-  margin-right: var(--hf-spacing-xxs);
-  font-weight: bold;
+  margin-right: var(--hf-spacing-xs);
+  font-weight: 600;
   text-transform: uppercase;
-  font-size: var(--hf-font-size-small);
+  font-size: var(--hf-font-size-base);
 }
 
 /* ---- Buttons ---- */
 
 .hf-button {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: var(--hf-spacing-xxs);
-  padding: var(--hf-spacing-xs) var(--hf-spacing-m);
+  padding: var(--hf-spacing-s) var(--hf-spacing-sm);
   border: 1px solid var(--hf-color-primary);
-  background: var(--hf-color-bg);
+  border-radius: 0;
+  background-color: transparent;
   color: var(--hf-color-primary);
   font-family: var(--hf-font-family);
   font-size: var(--hf-font-size-base);
+  font-weight: 400;
+  line-height: 1;
+  vertical-align: middle;
+  text-decoration: none;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition: background-color 200ms ease-out, color 200ms ease-out;
+}
+
+.hf-button .hf-icon {
+  margin-inline-end: var(--hf-spacing-xs);
 }
 
 .hf-button:hover {
-  background: var(--hf-color-primary);
+  background-color: var(--hf-color-primary);
   color: var(--hf-color-bg);
 }
 
@@ -809,22 +818,25 @@ export default {
 
 .hf-button:disabled {
   opacity: 0.4;
-  cursor: not-allowed;
+  cursor: default;
 }
 
 .hf-button--solid {
-  background: var(--hf-color-primary);
+  background-color: var(--hf-color-primary);
   color: var(--hf-color-bg);
 }
 
 .hf-button--solid:hover {
-  background: var(--hf-color-bg);
+  background-color: var(--hf-color-bg);
   color: var(--hf-color-primary);
 }
 
 .hf-button--handsfree {
-  padding: var(--hf-spacing-m) var(--hf-spacing-l);
-  font-size: var(--hf-font-size-large);
+  padding: var(--hf-spacing-s) var(--hf-spacing-sm);
+}
+
+.hf-button--handsfree .hf-icon {
+  margin-inline-end: var(--hf-spacing-xxs);
 }
 
 /* ---- Icons ---- */
@@ -892,7 +904,7 @@ export default {
   display: flex;
   justify-content: space-between;
   text-transform: uppercase;
-  font-weight: bold;
+  font-weight: 600;
   font-size: var(--hf-font-size-large);
   margin-bottom: var(--hf-spacing-xs);
 }
@@ -903,7 +915,7 @@ export default {
 
 .hf-tooltip-text {
   display: block;
-  font-size: var(--hf-font-size-base);
+  font-size: var(--hf-font-size-small);
   line-height: 1.5;
 }
 
@@ -960,7 +972,7 @@ export default {
 
 .hf-headline__title {
   text-transform: uppercase;
-  font-weight: bold;
+  font-weight: 600;
   font-size: var(--hf-font-size-base);
   margin-left: var(--hf-spacing-xxs);
 }
@@ -1029,7 +1041,7 @@ export default {
 }
 
 .hf-content p {
-  margin: 0 0 var(--hf-spacing-xs);
+  margin: 0 0 var(--hf-spacing-s);
   font-size: var(--hf-font-size-base);
 }
 
@@ -1039,16 +1051,16 @@ export default {
 
 .hf-content ul {
   margin: 0;
-  padding: var(--hf-spacing-xxs) 0 var(--hf-spacing-xxs) var(--hf-spacing-m);
+  padding: var(--hf-spacing-xs) 0 var(--hf-spacing-xs) var(--hf-spacing-s);
   line-height: 1;
 }
 
 .hf-content ul li {
-  margin: 0 0 var(--hf-spacing-xxs);
+  margin: 0 0 var(--hf-spacing-xs);
 }
 
 .hf-content a {
-  color: var(--hf-color-primary);
+  color: var(--hf-color-text);
 }
 
 /* ---- Introduction steps ---- */
@@ -1067,7 +1079,11 @@ export default {
 }
 
 .hf-introduction-buttons .hf-button {
-  padding: var(--hf-spacing-xs);
+  padding: var(--hf-spacing-s) calc(var(--hf-spacing-s) - var(--hf-spacing-xxs));
+}
+
+.hf-introduction-buttons .hf-button .hf-icon {
+  margin-inline-end: 0;
 }
 
 .hf-introduction-buttons .hf-button:last-of-type {
@@ -1099,7 +1115,7 @@ export default {
 .hf-vote {
   display: flex;
   gap: 0;
-  margin: var(--hf-spacing-xs) 0 var(--hf-spacing-m);
+  margin: var(--hf-spacing-xs) 0;
 }
 
 .hf-vote .hf-button {
