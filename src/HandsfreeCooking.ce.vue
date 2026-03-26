@@ -61,7 +61,9 @@
       class="hf-popup"
       :class="{
         'hf-popup--opened': isPopupOpened,
-        'hf-popup--hidden': currentStage === null
+        'hf-popup--hidden': currentStage === null,
+        'hf-not-recognized': isNotRecognizedStage || isNotRecognizedStageError,
+        'hf-error-state': isNotRecognizedStageError
       }"
     >
       <template v-if="currentStage && currentStage.includes('introduction')">
@@ -99,7 +101,6 @@
       </template>
       <template v-if="isNotRecognizedStage">
         <Popup
-          additional-classname="hf-not-recognized"
           :translations="mergedTranslations.notRecognized"
           :is-loading="isLoading"
           @toggle-popup="openHelp"
@@ -107,7 +108,6 @@
       </template>
       <template v-if="isNotRecognizedStageError">
         <Popup
-          additional-classname="hf-not-recognized hf-error-state"
           :translations="mergedTranslations.notRecognizedError"
           :is-loading="isLoading"
           @toggle-popup="openHelp"
@@ -1063,6 +1063,10 @@ export default {
   color: var(--hf-color-text);
 }
 
+.hf-content-area > .hf-button {
+  margin-top: var(--hf-spacing-s);
+}
+
 /* ---- Introduction steps ---- */
 
 .hf-introduction-steps .hf-step {
@@ -1092,11 +1096,11 @@ export default {
 
 /* ---- Not recognized ---- */
 
-.hf-not-recognized .hf-headline__opener {
+.hf-popup.hf-not-recognized {
   border: 1px solid var(--hf-color-error);
 }
 
-.hf-error-state {
+.hf-popup.hf-error-state {
   color: var(--hf-color-error);
 }
 
@@ -1115,7 +1119,7 @@ export default {
 .hf-vote {
   display: flex;
   gap: 0;
-  margin: var(--hf-spacing-xs) 0;
+  margin: var(--hf-spacing-s) 0;
 }
 
 .hf-vote .hf-button {
