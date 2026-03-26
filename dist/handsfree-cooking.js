@@ -4601,29 +4601,29 @@ function qc(e, t, n, s) {
   return e ? (H(e.help, () => {
     E("listening help"), h(!0), w(!0), s("handsfree-command", { command: "help" }), c > 0 && (c -= 1);
   }), H(e.scrollUp, () => {
-    window.scrollBy({ top: -300, behavior: "smooth" }), s("handsfree-command", { command: "scroll-up" });
+    window.scrollBy({ top: -300, behavior: "smooth" }), s("handsfree-command", { command: "scroll up" });
   }), H(e.scrollDown, () => {
-    window.scrollBy({ top: 300, behavior: "smooth" }), s("handsfree-command", { command: "scroll-down" });
+    window.scrollBy({ top: 300, behavior: "smooth" }), s("handsfree-command", { command: "scroll down" });
   }), H(e.exit, () => {
     E("listening"), h(!1), s("handsfree-command", { command: "exit" });
   }), H(e.goToInstructions, () => {
     i || A(), i && (window.scrollTo({
       top: i.offsetTop - d,
       behavior: "smooth"
-    }), s("handsfree-command", { command: "go-to-instructions" })), c > 0 && (c -= 1, E("listening"), w(!1));
+    }), s("handsfree-command", { command: "go to instructions" })), c > 0 && (c -= 1, E("listening"), w(!1));
   }), H(e.goToIngredients, () => {
     r || A(), r && (window.scrollTo({
       top: r.offsetTop - d,
       behavior: "smooth"
-    }), s("handsfree-command", { command: "go-to-ingredients" })), c > 0 && (c -= 1, E("listening"), w(!1));
+    }), s("handsfree-command", { command: "go to ingredients" })), c > 0 && (c -= 1, E("listening"), w(!1));
   }), H(e.nextStep, () => {
-    l.length === 0 && A(), c < l.length - 1 && (c += 1, N(), s("handsfree-command", { command: "next-step" }));
+    l.length === 0 && A(), c < l.length - 1 && (c += 1, N(), s("handsfree-command", { command: "next step" }));
   }), H(e.previousStep, () => {
-    l.length === 0 && A(), c > 0 && (c -= 1, N(), s("handsfree-command", { command: "previous-step" }));
+    l.length === 0 && A(), c > 0 && (c -= 1, N(), s("handsfree-command", { command: "previous step" }));
   }), H(e.letsCook, () => {
-    x(!0), E("listening"), w(!1), s("handsfree-command", { command: "lets-cook" });
+    x(!0), E("listening"), w(!1), s("handsfree-command", { command: "let's cook" });
   }), H(e.imDone, () => {
-    s("handsfree-command", { command: "im-done" });
+    s("handsfree-command", { command: "i'm done" });
   }), { commands: o, destroy: () => F.disconnect() }) : { commands: o, destroy: () => F.disconnect() };
 }
 function Yc(e) {
@@ -5303,9 +5303,9 @@ const sf = /* @__PURE__ */ jt(Ga, [["render", nf]]), of = {
     }, c = () => {
       t("togglePopup");
     }, d = /* @__PURE__ */ he(!1), f = () => {
-      d.value = !0, s("handsfree-feedback", { vote: "up", text: props.translations.voteUp });
+      d.value = !0, s("handsfree-feedback", { vote: "up", text: e.translations.voteUp });
     }, h = () => {
-      d.value = !0, s("handsfree-feedback", { vote: "down", text: props.translations.voteDown });
+      d.value = !0, s("handsfree-feedback", { vote: "down", text: e.translations.voteDown });
     }, x = () => {
       Ys(() => {
         const w = o.value, E = i.value, A = r.value;

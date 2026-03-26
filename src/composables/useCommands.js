@@ -76,12 +76,12 @@ export default function useCommands(model, selectors, voiceState, emitEvent) {
 
   addCommand(model.scrollUp, () => {
     window.scrollBy({ top: -300, behavior: 'smooth' })
-    emitEvent('handsfree-command', { command: 'scroll-up' })
+    emitEvent('handsfree-command', { command: 'scroll up' })
   })
 
   addCommand(model.scrollDown, () => {
     window.scrollBy({ top: 300, behavior: 'smooth' })
-    emitEvent('handsfree-command', { command: 'scroll-down' })
+    emitEvent('handsfree-command', { command: 'scroll down' })
   })
 
   addCommand(model.exit, () => {
@@ -99,7 +99,7 @@ export default function useCommands(model, selectors, voiceState, emitEvent) {
         top: instructionsElement.offsetTop - offset,
         behavior: 'smooth'
       })
-      emitEvent('handsfree-command', { command: 'go-to-instructions' })
+      emitEvent('handsfree-command', { command: 'go to instructions' })
     }
     if (currentStepIndex > 0) {
       currentStepIndex -= 1
@@ -117,7 +117,7 @@ export default function useCommands(model, selectors, voiceState, emitEvent) {
         top: ingredientsElement.offsetTop - offset,
         behavior: 'smooth'
       })
-      emitEvent('handsfree-command', { command: 'go-to-ingredients' })
+      emitEvent('handsfree-command', { command: 'go to ingredients' })
     }
     if (currentStepIndex > 0) {
       currentStepIndex -= 1
@@ -134,7 +134,7 @@ export default function useCommands(model, selectors, voiceState, emitEvent) {
     if (currentStepIndex < steps.length - 1) {
       currentStepIndex += 1
       scrollToStep()
-      emitEvent('handsfree-command', { command: 'next-step' })
+      emitEvent('handsfree-command', { command: 'next step' })
     }
   })
 
@@ -146,7 +146,7 @@ export default function useCommands(model, selectors, voiceState, emitEvent) {
     if (currentStepIndex > 0) {
       currentStepIndex -= 1
       scrollToStep()
-      emitEvent('handsfree-command', { command: 'previous-step' })
+      emitEvent('handsfree-command', { command: 'previous step' })
     }
   })
 
@@ -154,11 +154,11 @@ export default function useCommands(model, selectors, voiceState, emitEvent) {
     toggleListening(true)
     updateCurrentStage('listening')
     togglePopupState(false)
-    emitEvent('handsfree-command', { command: 'lets-cook' })
+    emitEvent('handsfree-command', { command: "let's cook" })
   })
 
   addCommand(model.imDone, () => {
-    emitEvent('handsfree-command', { command: 'im-done' })
+    emitEvent('handsfree-command', { command: "i'm done" })
   })
 
   return { commands, destroy: () => observer.disconnect() }

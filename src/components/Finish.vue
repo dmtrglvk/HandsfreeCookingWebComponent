@@ -79,7 +79,7 @@ export default {
     }
   },
   emits: ['closeHandsFreeFlow', 'togglePopup'],
-  setup(_, { emit }) {
+  setup(props, { emit }) {
     const voiceState = useVoiceState()
     const emitEvent = inject('emitEvent')
 
