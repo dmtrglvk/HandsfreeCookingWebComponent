@@ -8,12 +8,11 @@
         <span
           ref="tooltip"
           class="hf-tooltip-wrapper"
-          @click.stop
         >
           <HfIcon
             icon="help"
             :size="16"
-            @click="isTooltipVisible = !isTooltipVisible"
+            @click="toggleTooltip"
           />
           <transition name="hf-fade">
             <span
@@ -149,7 +148,7 @@
 
 <script>
 import {
-  ref, onMounted, onUnmounted, computed, provide, getCurrentInstance
+  ref, watch, onMounted, onUnmounted, computed, provide, getCurrentInstance
 } from 'vue'
 import { createVoiceState, provideVoiceState } from '@/composables/useVoiceState'
 import useCommands from '@/composables/useCommands'
@@ -399,11 +398,29 @@ export default {
       }, 500)
     }
 
+    const toggleTooltip = () => {
+      isTooltipVisible.value = !isTooltipVisible.value
+    }
+
+    let outsideClickRaf = null
     const handleClickOutside = (event) => {
       if (tooltip.value && !event.composedPath().includes(tooltip.value)) {
         isTooltipVisible.value = false
       }
     }
+
+    watch(isTooltipVisible, (visible) => {
+      if (outsideClickRaf) {
+        cancelAnimationFrame(outsideClickRaf)
+        outsideClickRaf = null
+      }
+      document.removeEventListener('click', handleClickOutside, true)
+      if (visible) {
+        outsideClickRaf = requestAnimationFrame(() => {
+          document.addEventListener('click', handleClickOutside, true)
+        })
+      }
+    })
 
     const handleCommand = (recognizedSpeech) => {
       let foundCommand = null
@@ -648,8 +665,6 @@ export default {
     }
 
     onMounted(() => {
-      document.addEventListener('click', handleClickOutside)
-
       restartInterval = setInterval(() => {
         if (
           webSpeechFeatureStatus.value === 'stopped' &&
@@ -669,7 +684,8 @@ export default {
     })
 
     onUnmounted(() => {
-      document.removeEventListener('click', handleClickOutside)
+      document.removeEventListener('click', handleClickOutside, true)
+      if (outsideClickRaf) cancelAnimationFrame(outsideClickRaf)
       if (restartInterval) {
         clearInterval(restartInterval)
       }
@@ -698,6 +714,7 @@ export default {
       tooltip,
       fakeButton,
       isLoading,
+      toggleTooltip,
       openHelp,
       startHandsFreeFlow,
       finishHandsFreeFlow,
