@@ -8,6 +8,7 @@
         <span
           ref="tooltip"
           class="hf-tooltip-wrapper"
+          @click.stop
         >
           <HfIcon
             icon="help"
