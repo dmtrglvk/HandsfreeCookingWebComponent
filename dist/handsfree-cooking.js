@@ -5303,9 +5303,9 @@ const sf = /* @__PURE__ */ jt(Ga, [["render", nf]]), of = {
     }, c = () => {
       t("togglePopup");
     }, d = /* @__PURE__ */ he(!1), f = () => {
-      d.value = !0, s("handsfree-feedback", { vote: "up" });
+      d.value = !0, s("handsfree-feedback", { vote: "up", text: props.translations.voteUp });
     }, h = () => {
-      d.value = !0, s("handsfree-feedback", { vote: "down" });
+      d.value = !0, s("handsfree-feedback", { vote: "down", text: props.translations.voteDown });
     }, x = () => {
       Ys(() => {
         const w = o.value, E = i.value, A = r.value;

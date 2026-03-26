@@ -100,12 +100,12 @@ export default {
 
     const votedUp = () => {
       voted.value = true
-      emitEvent('handsfree-feedback', { vote: 'up' })
+      emitEvent('handsfree-feedback', { vote: 'up', text: props.translations.voteUp })
     }
 
     const votedDown = () => {
       voted.value = true
-      emitEvent('handsfree-feedback', { vote: 'down' })
+      emitEvent('handsfree-feedback', { vote: 'down', text: props.translations.voteDown })
     }
 
     const checkVoteLayout = () => {
