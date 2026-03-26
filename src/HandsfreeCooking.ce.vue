@@ -399,7 +399,7 @@ export default {
     }
 
     const handleClickOutside = (event) => {
-      if (tooltip.value && !tooltip.value.contains(event.target)) {
+      if (tooltip.value && !event.composedPath().includes(tooltip.value)) {
         isTooltipVisible.value = false
       }
     }
