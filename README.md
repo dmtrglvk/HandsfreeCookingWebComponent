@@ -17,12 +17,101 @@ Download `dist/handsfree-cooking.iife.js` (or host it on a CDN) and add it to yo
 ### Option B: ES module / npm
 
 ```bash
-npm install handsfree-cooking
+npm install github:dmtrglvk/HandsfreeCookingWebComponent
 ```
 
 ```javascript
 import 'handsfree-cooking'
 ```
+
+---
+
+## Bundler Configuration
+
+When using `<handsfree-cooking>` inside templates compiled by a framework (Vue, React, etc.), the bundler or framework compiler may need to know that it is a **native Custom Element**, not a framework component.
+
+### Vite + Vue
+
+In `vite.config.js`, configure the Vue plugin's `compilerOptions`:
+
+```javascript
+import vue from '@vitejs/plugin-vue'
+
+export default defineConfig({
+  plugins: [
+    vue({
+      template: {
+        compilerOptions: {
+          isCustomElement: (tag) => tag === 'handsfree-cooking'
+        }
+      }
+    })
+  ]
+})
+```
+
+### Webpack + Vue (vue-loader)
+
+In `vue.config.js` or your webpack config where `vue-loader` is configured:
+
+```javascript
+module.exports = {
+  chainWebpack: (config) => {
+    config.module
+      .rule('vue')
+      .use('vue-loader')
+      .tap((options) => ({
+        ...options,
+        compilerOptions: {
+          isCustomElement: (tag) => tag === 'handsfree-cooking'
+        }
+      }))
+  }
+}
+```
+
+### Storybook (Vue 3 + Vite)
+
+In `.storybook/main.js`, replace the default Vue plugin in `viteFinal`:
+
+```javascript
+import vue from '@vitejs/plugin-vue'
+
+export default {
+  framework: '@storybook/vue3-vite',
+  viteFinal: async (config) => {
+    config.plugins = config.plugins
+      .flat()
+      .filter((p) => p?.name !== 'vite:vue')
+
+    config.plugins.push(
+      vue({
+        template: {
+          compilerOptions: {
+            isCustomElement: (tag) => tag === 'handsfree-cooking'
+          }
+        }
+      })
+    )
+
+    return config
+  }
+}
+```
+
+Also import the component in `.storybook/preview.js`:
+
+```javascript
+import 'handsfree-cooking'
+```
+
+### React / Next.js / Angular
+
+No bundler configuration needed. Custom elements work natively in JSX and Angular templates.
+
+### Static HTML / WordPress / Shopify
+
+No configuration needed. Just include the script tag and the HTML element.
 
 ---
 
@@ -295,7 +384,7 @@ All available keys with their English defaults:
 
 ## Events
 
-The component dispatches `CustomEvent`s on the `<handsfree-cooking>` element. Listen to them with standard DOM APIs:
+The component dispatches `CustomEvent`s that bubble through the DOM. Listen on `document` or on the element itself:
 
 | Event | `detail` | When |
 |---|---|---|
@@ -304,27 +393,28 @@ The component dispatches `CustomEvent`s on the `<handsfree-cooking>` element. Li
 | `handsfree-error` | `{ error }` | Mic blocked, browser not supported, etc. |
 | `handsfree-state-change` | `{ stage, isListening }` | Stage or listening state changes |
 | `handsfree-finished` | `{ reason }` | User finishes or stops cooking |
-| `handsfree-feedback` | `{ vote }` | User taps thumbs up (`"up"`) or down (`"down"`) |
+| `handsfree-feedback` | `{ vote, text }` | User taps thumbs up/down or closes. `vote` is `"up"`, `"down"`, or `"close"`. `text` is the translated label. |
 
 ### Example: analytics integration
 
 ```javascript
-const hf = document.querySelector('handsfree-cooking')
-
-hf.addEventListener('handsfree-activated', () => {
+document.addEventListener('handsfree-activated', () => {
   gtag('event', 'handsfree_start')
 })
 
-hf.addEventListener('handsfree-command', (e) => {
+document.addEventListener('handsfree-command', (e) => {
   gtag('event', 'handsfree_command', { command: e.detail.command })
 })
 
-hf.addEventListener('handsfree-finished', (e) => {
+document.addEventListener('handsfree-finished', (e) => {
   gtag('event', 'handsfree_end', { reason: e.detail.reason })
 })
 
-hf.addEventListener('handsfree-feedback', (e) => {
-  gtag('event', 'handsfree_feedback', { vote: e.detail.vote })
+document.addEventListener('handsfree-feedback', (e) => {
+  gtag('event', 'handsfree_feedback', {
+    vote: e.detail.vote,
+    text: e.detail.text
+  })
 })
 ```
 
@@ -332,28 +422,68 @@ hf.addEventListener('handsfree-feedback', (e) => {
 
 ## Styling
 
-The component uses Shadow DOM, so its styles are fully encapsulated. Override the look using CSS custom properties on the `<handsfree-cooking>` element:
+The component uses Shadow DOM, so its styles are fully encapsulated. Override the look using CSS custom properties on the `<handsfree-cooking>` element or any ancestor:
 
 ```css
 handsfree-cooking {
   --hf-color-bg: #ffffff;
-  --hf-color-text: #1a1a1a;
-  --hf-color-primary: #e4002b;
-  --hf-color-primary-hover: #c00025;
-  --hf-color-error: #d32f2f;
-  --hf-color-border: #cccccc;
+  --hf-color-text: #000000;
+  --hf-color-primary: #000000;
+  --hf-color-primary-hover: #000000;
+  --hf-color-error: #cc0033;
+  --hf-color-border: #d9d9d9;
+
   --hf-spacing-xxs: 4px;
   --hf-spacing-xs: 8px;
-  --hf-spacing-s: 12px;
-  --hf-spacing-m: 16px;
-  --hf-spacing-l: 24px;
-  --hf-font-family: 'My Brand Font', sans-serif;
+  --hf-spacing-s: 16px;
+  --hf-spacing-sm: 24px;
+  --hf-spacing-m: 32px;
+
+  --hf-font-family: inherit;
   --hf-font-size-base: 16px;
   --hf-font-size-small: 14px;
   --hf-font-size-large: 18px;
+
   --hf-popup-width: 410px;
   --hf-popup-shadow: 0 12px 24px 0 rgba(0, 0, 0, 0.20);
   --hf-z-index: 10000;
+}
+```
+
+### Variable reference
+
+| Variable | Default | Description |
+|---|---|---|
+| `--hf-color-bg` | `#ffffff` | Background color for buttons, popup, and tooltip |
+| `--hf-color-text` | `#000000` | Primary text color |
+| `--hf-color-primary` | `#000000` | Button borders, filled button backgrounds, icon colors |
+| `--hf-color-primary-hover` | `#000000` | Hover state for primary-colored elements |
+| `--hf-color-error` | `#cc0033` | Error state text and "not recognized" border color |
+| `--hf-color-border` | `#d9d9d9` | Default border color |
+| `--hf-spacing-xxs` | `4px` | Smallest spacing (icon gaps) |
+| `--hf-spacing-xs` | `8px` | Small spacing (label margins, vote gaps) |
+| `--hf-spacing-s` | `16px` | Medium spacing (button padding, popup padding, content margins) |
+| `--hf-spacing-sm` | `24px` | Medium-large spacing (button inline padding) |
+| `--hf-spacing-m` | `32px` | Large spacing (root bottom margin) |
+| `--hf-font-family` | `inherit` | Font family (inherits from host page by default) |
+| `--hf-font-size-base` | `16px` | Base text and button font size |
+| `--hf-font-size-small` | `14px` | Tooltip text font size |
+| `--hf-font-size-large` | `18px` | Popup headline font size |
+| `--hf-popup-width` | `410px` | Max width of the floating popup |
+| `--hf-popup-shadow` | `0 12px 24px 0 rgba(0,0,0,0.20)` | Box shadow for popup and tooltip |
+| `--hf-z-index` | `10000` | Z-index for popup (tooltip uses z-index + 1) |
+
+### Example: brand theming
+
+```css
+handsfree-cooking {
+  --hf-color-primary: #e4002b;
+  --hf-color-primary-hover: #c00025;
+  --hf-color-error: #d32f2f;
+  --hf-font-family: 'Playfair Display', serif;
+  --hf-spacing-s: 12px;
+  --hf-spacing-sm: 20px;
+  --hf-spacing-m: 24px;
 }
 ```
 
@@ -364,6 +494,8 @@ handsfree-cooking {
 ### React
 
 ```jsx
+import 'handsfree-cooking'
+
 function RecipePage() {
   return (
     <div>
@@ -404,6 +536,8 @@ function RecipePage() {
   <div class="step">Step 2: ...</div>
 </template>
 ```
+
+> **Note:** If `<handsfree-cooking>` is used inside a Vue SFC template, you must configure `isCustomElement` in your build tool -- see [Bundler Configuration](#bundler-configuration) above.
 
 ### Static HTML / WordPress / Shopify
 
