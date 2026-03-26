@@ -1,0 +1,29 @@
+{
+  "name": "handsfree-cooking",
+  "version": "1.0.0",
+  "description": "A Web Component for hands-free voice-controlled recipe navigation using the Web Speech API",
+  "type": "module",
+  "main": "dist/handsfree-cooking.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [
+    "web-component",
+    "voice-control",
+    "speech-recognition",
+    "handsfree",
+    "cooking",
+    "recipe"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "hark": "^1.2.3",
+    "vue": "^3.5.22"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "vite": "^7.1.10"
+  }
+}
