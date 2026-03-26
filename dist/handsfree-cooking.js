@@ -5299,7 +5299,7 @@ const sf = /* @__PURE__ */ jt(Ga, [["render", nf]]), of = {
   emits: ["closeHandsFreeFlow", "togglePopup"],
   setup(e, { emit: t }) {
     const n = oo(), s = Dt("emitEvent"), o = /* @__PURE__ */ he(null), i = /* @__PURE__ */ he(null), r = /* @__PURE__ */ he(null), l = () => {
-      t("closeHandsFreeFlow"), s("handsfree-feedback", { vote: "close" });
+      t("closeHandsFreeFlow"), s("handsfree-feedback", { vote: "close", text: e.translations.buttonText });
     }, c = () => {
       t("togglePopup");
     }, d = /* @__PURE__ */ he(!1), f = () => {

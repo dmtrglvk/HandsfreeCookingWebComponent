@@ -89,7 +89,7 @@ export default {
 
     const closeHandsFreeFlow = () => {
       emit('closeHandsFreeFlow')
-      emitEvent('handsfree-feedback', { vote: 'close' })
+      emitEvent('handsfree-feedback', { vote: 'close', text: props.translations.buttonText })
     }
 
     const togglePopup = () => {
