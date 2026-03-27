@@ -1031,21 +1031,15 @@ export default {
 .hf-spinner circle {
   stroke: currentColor;
   stroke-dasharray: 44px;
-  stroke-dashoffset: 11px;
+  stroke-dashoffset: 33px;
   transform-origin: center;
-  transform: rotateY(180deg) rotate(90deg);
-  animation: hf-spinner 3850ms infinite ease;
+  animation: hf-spinner 2s infinite ease-in-out;
 }
 
 @keyframes hf-spinner {
-  0% { stroke-dashoffset: 33px; transform: rotateY(0deg) rotate(0deg); }
-  24.9999% { stroke-dashoffset: 11px; transform: rotateY(0deg) rotate(0deg); }
-  25% { stroke-dashoffset: 11px; transform: rotateY(180deg) rotate(270deg); }
-  49.9999% { stroke-dashoffset: 33px; transform: rotateY(180deg) rotate(270deg); }
-  50% { stroke-dashoffset: 33px; transform: rotateY(0deg) rotate(180deg); }
-  74.9999% { stroke-dashoffset: 11px; transform: rotateY(0deg) rotate(180deg); }
-  75% { stroke-dashoffset: 11px; transform: rotateY(180deg) rotate(90deg); }
-  100% { stroke-dashoffset: 33px; transform: rotateY(180deg) rotate(90deg); }
+  0% { stroke-dashoffset: 33px; transform: rotate(0deg); }
+  50% { stroke-dashoffset: 11px; transform: rotate(135deg); }
+  100% { stroke-dashoffset: 33px; transform: rotate(360deg); }
 }
 
 @keyframes hf-rotation {
@@ -1119,6 +1113,10 @@ export default {
 }
 
 .hf-popup.hf-error-state {
+  color: var(--hf-color-error);
+}
+
+.hf-popup.hf-error-state .hf-headline {
   color: var(--hf-color-error);
 }
 
