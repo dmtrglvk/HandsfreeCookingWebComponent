@@ -1,21 +1,5 @@
 import SpeakRecognition from './speak-recognition'
-
-function isAndroid() {
-  return /Android/i.test(navigator.userAgent)
-}
-
-const DEFAULT_CONFIG = {
-  lang: 'en-US',
-  interimResults: true,
-  maxAlternatives: 10
-}
-
-const DEFAULT_STATE = {
-  error: null,
-  status: 'stopped',
-  transcriptions: [],
-  finalTranscriptions: false
-}
+import { isAndroid, DEFAULT_CONFIG, DEFAULT_STATE } from './shared'
 
 export function createStepMode() {
   let speakRecognizer
@@ -34,18 +18,18 @@ export function createStepMode() {
   }
 
   function stopSpeakRecognizer() {
-    if (!isAndroid()) onUserSpeak(0)
+    onUserSpeak(0)
     if (speakRecognizer) speakRecognizer.stop()
   }
 
   function startSpeakRecognizer() {
     speakRecognizer = new SpeakRecognition({
       onVolumeChange: (volume) => {
-        if (!isAndroid()) onUserSpeak(volume)
+        onUserSpeak(volume)
       }
     })
     speakRecognizer.start()
-    if (!isAndroid()) onUserSpeak(0)
+    onUserSpeak(0)
   }
 
   function updateHandleResultTimeout(transcriptions, isFinal) {
@@ -61,7 +45,6 @@ export function createStepMode() {
   }
 
   function stopSpeechRecognizer() {
-    if (!isAndroid() && onUserSpeak) stopSpeakRecognizer()
     speechRecognizerStarted = false
     clearTimeout(waitingForResultTimeout)
     notifyState()
@@ -86,13 +69,11 @@ export function createStepMode() {
   function handleOnEnd() {
     speechRecognizerStarted = false
     clearTimeout(waitingForResultTimeout)
-    if (!isAndroid() && onUserSpeak) stopSpeakRecognizer()
     notifyState()
   }
 
   function handleError(event) {
     notifyState({ error: event.error, status: 'error' })
-    if (!isAndroid() && onUserSpeak) stopSpeakRecognizer()
   }
 
   function startSpeechRecognizer() {
@@ -125,7 +106,7 @@ export function createStepMode() {
     const updatedConfig = { ...DEFAULT_CONFIG, ...config }
     initSpeechRecognition(updatedConfig)
     onUserSpeech = config.onUserSpeech
-    if (!isAndroid()) onUserSpeak = config.onUserSpeak
+    onUserSpeak = config.onUserSpeak || (() => {})
   }
 
   function start() {

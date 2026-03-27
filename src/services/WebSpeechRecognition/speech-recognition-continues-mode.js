@@ -1,24 +1,8 @@
 import SpeakRecognition from './speak-recognition'
-
-function isAndroid() {
-  return /Android/i.test(navigator.userAgent)
-}
+import { isAndroid, DEFAULT_CONFIG, DEFAULT_STATE } from './shared'
 
 const ACTIVITY_TIMEOUT = 2 * 60 * 1000
 const SPEECH_TIMEOUT = 3 * 1000
-
-const DEFAULT_CONFIG = {
-  lang: 'en-US',
-  interimResults: true,
-  maxAlternatives: 10
-}
-
-const DEFAULT_STATE = {
-  error: null,
-  status: 'stopped',
-  transcriptions: [],
-  finalTranscriptions: false
-}
 
 const MAX_RESTART_RETRIES = 5
 
@@ -46,19 +30,19 @@ export function createContinuesMode() {
     clearAllTimeouts()
     speechRecognizer.abort()
     notifyState()
-    if (!isAndroid()) onUserSpeak(0)
+    onUserSpeak(0)
   }
 
   function stopSpeechRecognizer() {
     clearAllTimeouts()
     if (speechRecognizer) speechRecognizer.stop()
     notifyState()
-    if (!isAndroid()) onUserSpeak(0)
+    onUserSpeak(0)
   }
 
   function startSpeechRecognizer() {
     notifyState({ status: 'starting' })
-    if (!isAndroid()) onUserSpeak(0)
+    onUserSpeak(0)
     try {
       speechRecognizer.start()
       restartRetries = 0
@@ -78,19 +62,19 @@ export function createContinuesMode() {
 
   function stopSpeakRecognizer() {
     if (speakRecognizer) speakRecognizer.stop()
-    if (!isAndroid()) onUserSpeak(0)
+    onUserSpeak(0)
   }
 
   function handleOnEnd() {
     clearAllTimeouts()
     notifyState()
-    if (!isAndroid()) onUserSpeak(0)
+    onUserSpeak(0)
     if (!stopped) delayedStartSpeechRecognizer()
   }
 
   function handleOnStart() {
     notifyState({ status: 'recording' })
-    if (!isAndroid()) onUserSpeak(0)
+    onUserSpeak(0)
   }
 
   function updateHandleResultTimeout(transcriptions, isFinal) {
@@ -124,7 +108,7 @@ export function createContinuesMode() {
 
   function handleError(event) {
     notifyState({ error: event.error, status: 'error' })
-    if (!isAndroid()) onUserSpeak(0)
+    onUserSpeak(0)
   }
 
   function handleWaitingForActivityTimeout() {
@@ -140,10 +124,10 @@ export function createContinuesMode() {
         waitingForActivityTimeout = setTimeout(handleWaitingForActivityTimeout, ACTIVITY_TIMEOUT)
       },
       onVolumeChange: (volume) => {
-        if (!isAndroid()) onUserSpeak(volume)
+        onUserSpeak(volume)
       }
     })
-    if (!isAndroid()) onUserSpeak(0)
+    onUserSpeak(0)
     speakRecognizer.start()
   }
 
@@ -164,7 +148,7 @@ export function createContinuesMode() {
   function init(config) {
     const updatedConfig = { ...DEFAULT_CONFIG, ...config }
     onUserSpeech = config.onUserSpeech
-    if (!isAndroid()) onUserSpeak = config.onUserSpeak
+    onUserSpeak = config.onUserSpeak || (() => {})
     initSpeechRecognition(updatedConfig)
   }
 

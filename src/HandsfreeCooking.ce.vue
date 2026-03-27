@@ -85,7 +85,7 @@
           @begin-listening="beginListening"
         />
       </template>
-      <template v-if="stage === 'not-allowed'">
+      <template v-else-if="stage === 'not-allowed'">
         <Popup
           :translations="mergedTranslations.notAllowed"
           :is-loading="isLoading"
@@ -94,14 +94,14 @@
           @button-action="requestMicrophoneAccess"
         />
       </template>
-      <template v-if="stage === 'listening' && subState === null">
+      <template v-else-if="stage === 'listening' && subState === null">
         <Popup
           :translations="mergedTranslations.listening"
           :is-loading="isLoading"
           @toggle-popup="openHelp"
         />
       </template>
-      <template v-if="isHelpVisible">
+      <template v-else-if="isHelpVisible">
         <Popup
           :translations="mergedTranslations.help"
           :is-loading="isLoading"
@@ -109,21 +109,21 @@
           @button-action="finishHandsFreeFlow"
         />
       </template>
-      <template v-if="isNotRecognized">
+      <template v-else-if="isNotRecognized">
         <Popup
           :translations="mergedTranslations.notRecognized"
           :is-loading="isLoading"
           @toggle-popup="openHelp"
         />
       </template>
-      <template v-if="isNotRecognizedError">
+      <template v-else-if="isNotRecognizedError">
         <Popup
           :translations="mergedTranslations.notRecognizedError"
           :is-loading="isLoading"
           @toggle-popup="openHelp"
         />
       </template>
-      <template v-if="stage === 'not-supported'">
+      <template v-else-if="stage === 'not-supported'">
         <Popup
           additional-classname="hf-hide-chevron"
           :translations="mergedTranslations.notSupported"
@@ -131,14 +131,14 @@
           @button-action="closeHandsFreeFlow"
         />
       </template>
-      <template v-if="isAlmostDone">
+      <template v-else-if="isAlmostDone">
         <Popup
           :translations="mergedTranslations.almostDone"
           :is-loading="isLoading"
           @toggle-popup="togglePopup"
         />
       </template>
-      <template v-if="stage === 'finish'">
+      <template v-else-if="stage === 'finish'">
         <Finish
           :translations="mergedTranslations.finish"
           @close-hands-free-flow="closeHandsFreeFlow"
@@ -156,6 +156,8 @@ import {
 import { createVoiceState, provideVoiceState } from '@/composables/useVoiceState'
 import useCommands from '@/composables/useCommands'
 import WebSpeechRecognizer from '@/services/WebSpeechRecognition/index'
+import { deepMerge } from '@/utils/deepMerge'
+import { findBestMatch } from '@/utils/matchCommand'
 import HfIcon from '@/components/HfIcon.vue'
 import Popup from '@/components/Popup.vue'
 import Introduction from '@/components/Introduction.vue'
@@ -229,24 +231,7 @@ const DEFAULT_COMMANDS = {
   exit: ['exit', 'close']
 }
 
-function deepMerge(target, source) {
-  const result = { ...target }
-  for (const key of Object.keys(source)) {
-    if (
-      source[key] &&
-      typeof source[key] === 'object' &&
-      !Array.isArray(source[key]) &&
-      target[key] &&
-      typeof target[key] === 'object' &&
-      !Array.isArray(target[key])
-    ) {
-      result[key] = deepMerge(target[key], source[key])
-    } else {
-      result[key] = source[key]
-    }
-  }
-  return result
-}
+const MAX_UNRECOGNIZED_ATTEMPTS = 3
 
 export default {
   components: {
@@ -332,7 +317,7 @@ export default {
       instructions: props.instructionsSelector
     }))
 
-    const selectedLanguage = ref(
+    const selectedLanguage = computed(() =>
       props.lang || document.documentElement.lang || 'en'
     )
 
@@ -433,55 +418,7 @@ export default {
     })
 
     const handleCommand = (recognizedSpeech) => {
-      let foundCommand = null
-      const speech = recognizedSpeech
-        .toLowerCase()
-        .replace(/[\s\u00A0\u2000-\u200B\u2028\u2029\uFEFF]+$/g, '')
-        .replace(/^[\s\u00A0\u2000-\u200B\u2028\u2029\uFEFF]+/g, '')
-        .replace(/\s+/g, ' ')
-        .replace(/[.,!?;:。，！？；：．]+$/g, '')
-        .trim()
-        .normalize('NFD')
-        .replace(/[\u064B-\u065F\u0670]/g, '')
-        .normalize('NFC')
-        .trim()
-
-      const potentialMatches = []
-
-      Object.keys(commandsRef.value).forEach((alias) => {
-        const normalizedAlias = alias
-          .toLowerCase()
-          .replace(/[\s\u00A0\u2000-\u200B\u2028\u2029\uFEFF]+$/g, '')
-          .replace(/^[\s\u00A0\u2000-\u200B\u2028\u2029\uFEFF]+/g, '')
-          .replace(/\s+/g, ' ')
-          .trim()
-          .normalize('NFD')
-          .replace(/[\u064B-\u065F\u0670]/g, '')
-          .normalize('NFC')
-          .trim()
-
-        if (speech === normalizedAlias) {
-          potentialMatches.push({ alias, normalizedAlias, score: 3, type: 'exact' })
-        } else if (speech.startsWith(normalizedAlias)) {
-          potentialMatches.push({ alias, normalizedAlias, score: 2, type: 'starts-with' })
-        } else if (speech.endsWith(normalizedAlias)) {
-          potentialMatches.push({ alias, normalizedAlias, score: 2, type: 'ends-with' })
-        } else {
-          const aliasRegex = new RegExp(`(^|\\s)${normalizedAlias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(\\s|$)`, 'i')
-          if (aliasRegex.test(speech)) {
-            potentialMatches.push({ alias, normalizedAlias, score: 1, type: 'word-boundary' })
-          }
-        }
-      })
-
-      potentialMatches.sort((a, b) => {
-        if (a.score !== b.score) return b.score - a.score
-        return b.normalizedAlias.length - a.normalizedAlias.length
-      })
-
-      if (potentialMatches.length > 0) {
-        foundCommand = potentialMatches[0].alias
-      }
+      const foundCommand = findBestMatch(recognizedSpeech, Object.keys(commandsRef.value))
 
       if (foundCommand) {
         if (!isAlmostDone.value) {
@@ -506,7 +443,7 @@ export default {
           setStage('listening', 'not-recognized')
           togglePopupState(false)
         }
-        if (counter.value > 3) {
+        if (counter.value > MAX_UNRECOGNIZED_ATTEMPTS) {
           setStage('listening', 'recognized-error')
         }
       }
@@ -1110,10 +1047,6 @@ export default {
 
 .hf-popup.hf-not-recognized {
   border: 1px solid var(--hf-color-error);
-}
-
-.hf-popup.hf-error-state {
-  color: var(--hf-color-error);
 }
 
 .hf-popup.hf-error-state .hf-headline {

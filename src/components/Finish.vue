@@ -14,6 +14,7 @@
     <div
       ref="handsFreeVotes"
       class="hf-vote"
+      :class="{ 'hf-vote--stack': isStacked }"
     >
       <button
         v-if="!voted"
@@ -66,14 +67,7 @@ import {
 import { useVoiceState } from '@/composables/useVoiceState'
 import PopupHeadline from '@/components/PopupHeadline.vue'
 import HfIcon from '@/components/HfIcon.vue'
-
-function debounce(fn, delay) {
-  let timer = null
-  return (...args) => {
-    clearTimeout(timer)
-    timer = setTimeout(() => fn(...args), delay)
-  }
-}
+import { debounce } from '@/utils/debounce'
 
 export default {
   components: {
@@ -105,6 +99,7 @@ export default {
     }
 
     const voted = ref(false)
+    const isStacked = ref(false)
 
     const votedUp = () => {
       voted.value = true
@@ -118,9 +113,9 @@ export default {
 
     const checkVoteLayout = () => {
       nextTick(() => {
-        const container = handsFreeVotes.value
         const up = voteUp.value
         const down = voteDown.value
+        const container = handsFreeVotes.value
 
         if (!container || !up || !down) {
           return
@@ -129,11 +124,7 @@ export default {
         const totalWidth = up.offsetWidth + down.offsetWidth
         const containerWidth = container.offsetWidth
 
-        if (totalWidth > containerWidth) {
-          container.classList.add('hf-vote--stack')
-        } else {
-          container.classList.remove('hf-vote--stack')
-        }
+        isStacked.value = totalWidth > containerWidth
       })
     }
 
@@ -154,6 +145,7 @@ export default {
       votedDown,
       togglePopup,
       voted,
+      isStacked,
       voiceState,
       handsFreeVotes,
       voteUp,

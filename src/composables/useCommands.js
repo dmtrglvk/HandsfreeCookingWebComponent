@@ -1,4 +1,7 @@
 import { computed, watch, isRef, toValue } from 'vue'
+import { debounce } from '@/utils/debounce'
+
+const SCROLL_AMOUNT = 300
 
 export default function useCommands(modelRef, selectorsRef, voiceState, emitEvent) {
   let instructionsElement = null
@@ -25,9 +28,9 @@ export default function useCommands(modelRef, selectorsRef, voiceState, emitEven
     }
   }
 
-  const observer = new MutationObserver(() => {
-    cacheElements()
-  })
+  const debouncedCacheElements = debounce(cacheElements, 300)
+
+  const observer = new MutationObserver(debouncedCacheElements)
 
   observer.observe(document.body, { childList: true, subtree: true })
 
@@ -80,12 +83,12 @@ export default function useCommands(modelRef, selectorsRef, voiceState, emitEven
     })
 
     addCommand(model.scrollUp, () => {
-      window.scrollBy({ top: -300, behavior: 'smooth' })
+      window.scrollBy({ top: -SCROLL_AMOUNT, behavior: 'smooth' })
       emitEvent('handsfree-command', { command: 'scroll up' })
     })
 
     addCommand(model.scrollDown, () => {
-      window.scrollBy({ top: 300, behavior: 'smooth' })
+      window.scrollBy({ top: SCROLL_AMOUNT, behavior: 'smooth' })
       emitEvent('handsfree-command', { command: 'scroll down' })
     })
 
