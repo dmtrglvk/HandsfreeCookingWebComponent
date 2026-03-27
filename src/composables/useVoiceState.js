@@ -4,11 +4,16 @@ const VOICE_STATE_KEY = Symbol('voiceState')
 
 export function createVoiceState() {
   const state = reactive({
-    currentStage: null,
+    stage: null,
+    subState: null,
     isListening: false,
-    isHelpStage: false,
     isPopupOpened: true
   })
+
+  const setStage = (stage, subState = null) => {
+    state.stage = stage
+    state.subState = subState
+  }
 
   const toggleListening = (value) => {
     state.isListening = value
@@ -18,23 +23,12 @@ export function createVoiceState() {
     state.isPopupOpened = value
   }
 
-  const toggleHelpStage = (value) => {
-    state.isHelpStage = value
-  }
-
-  const updateCurrentStage = (value) => {
-    state.currentStage = value
-  }
-
-  const voiceState = {
+  return {
     state,
+    setStage,
     toggleListening,
-    togglePopupState,
-    toggleHelpStage,
-    updateCurrentStage
+    togglePopupState
   }
-
-  return voiceState
 }
 
 export function provideVoiceState(voiceState) {

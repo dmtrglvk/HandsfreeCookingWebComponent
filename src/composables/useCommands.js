@@ -1,24 +1,23 @@
-export default function useCommands(model, selectors, voiceState, emitEvent) {
-  const commands = {}
+import { computed, watch, isRef, toValue } from 'vue'
+
+export default function useCommands(modelRef, selectorsRef, voiceState, emitEvent) {
   let instructionsElement = null
   let ingredientsElement = null
   let steps = []
   let currentStepIndex = -1
-  const offset = window.innerWidth < 768 ? 75 : 60
 
-  const {
-    state,
-    toggleHelpStage,
-    toggleListening,
-    togglePopupState,
-    updateCurrentStage
-  } = voiceState
+  const getOffset = () => window.innerWidth < 768 ? 75 : 60
+
+  const { setStage, toggleListening, togglePopupState } = voiceState
+
+  const resolveSelectors = () => toValue(selectorsRef)
 
   const cacheElements = () => {
-    if (!instructionsElement && selectors.instructions) {
+    const selectors = resolveSelectors()
+    if (selectors.instructions) {
       instructionsElement = document.querySelector(selectors.instructions)
     }
-    if (!ingredientsElement && selectors.ingredients) {
+    if (selectors.ingredients) {
       ingredientsElement = document.querySelector(selectors.ingredients)
     }
     if (selectors.steps) {
@@ -32,133 +31,119 @@ export default function useCommands(model, selectors, voiceState, emitEvent) {
 
   observer.observe(document.body, { childList: true, subtree: true })
 
-  const scrollToStep = () => {
-    if (steps.length > 0 && steps[currentStepIndex]) {
-      const stepElement = steps[currentStepIndex]
-      const elementPosition = stepElement.getBoundingClientRect().top + window.scrollY
-      const offsetPosition = elementPosition - offset
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      })
-    }
-
-    if (steps.length === currentStepIndex + 1) {
-      updateCurrentStage('listening almost-done')
-      togglePopupState(true)
-    } else {
-      updateCurrentStage('listening')
-      togglePopupState(false)
-    }
-  }
-
-  const addCommand = (aliases, action) => {
-    if (!aliases) return
-    aliases.forEach((alias) => {
-      commands[alias] = action
+  if (isRef(selectorsRef)) {
+    watch(selectorsRef, () => {
+      instructionsElement = null
+      ingredientsElement = null
+      steps = []
+      cacheElements()
     })
   }
 
-  if (!model) {
-    return { commands, destroy: () => observer.disconnect() }
+  const scrollToElement = (element) => {
+    const offset = getOffset()
+    const elementPosition = element.getBoundingClientRect().top + window.scrollY
+    window.scrollTo({
+      top: elementPosition - offset,
+      behavior: 'smooth'
+    })
   }
 
-  addCommand(model.help, () => {
-    updateCurrentStage('listening help')
-    toggleHelpStage(true)
-    togglePopupState(true)
-    emitEvent('handsfree-command', { command: 'help' })
-    if (currentStepIndex > 0) {
-      currentStepIndex -= 1
+  const scrollToStep = () => {
+    if (steps.length > 0 && steps[currentStepIndex]) {
+      scrollToElement(steps[currentStepIndex])
     }
-  })
 
-  addCommand(model.scrollUp, () => {
-    window.scrollBy({ top: -300, behavior: 'smooth' })
-    emitEvent('handsfree-command', { command: 'scroll up' })
-  })
-
-  addCommand(model.scrollDown, () => {
-    window.scrollBy({ top: 300, behavior: 'smooth' })
-    emitEvent('handsfree-command', { command: 'scroll down' })
-  })
-
-  addCommand(model.exit, () => {
-    updateCurrentStage('listening')
-    toggleHelpStage(false)
-    emitEvent('handsfree-command', { command: 'exit' })
-  })
-
-  addCommand(model.goToInstructions, () => {
-    if (!instructionsElement) {
-      cacheElements()
-    }
-    if (instructionsElement) {
-      window.scrollTo({
-        top: instructionsElement.offsetTop - offset,
-        behavior: 'smooth'
-      })
-      emitEvent('handsfree-command', { command: 'go to instructions' })
-    }
-    if (currentStepIndex > 0) {
-      currentStepIndex -= 1
-      updateCurrentStage('listening')
+    if (steps.length === currentStepIndex + 1) {
+      setStage('listening', 'almost-done')
+      togglePopupState(true)
+    } else {
+      setStage('listening')
       togglePopupState(false)
     }
-  })
+  }
 
-  addCommand(model.goToIngredients, () => {
-    if (!ingredientsElement) {
-      cacheElements()
+  const commands = computed(() => {
+    const model = toValue(modelRef)
+    if (!model) return {}
+
+    const cmds = {}
+    const addCommand = (aliases, action) => {
+      if (!aliases) return
+      aliases.forEach((alias) => { cmds[alias] = action })
     }
-    if (ingredientsElement) {
-      window.scrollTo({
-        top: ingredientsElement.offsetTop - offset,
-        behavior: 'smooth'
-      })
-      emitEvent('handsfree-command', { command: 'go to ingredients' })
-    }
-    if (currentStepIndex > 0) {
-      currentStepIndex -= 1
-      updateCurrentStage('listening')
+
+    addCommand(model.help, () => {
+      setStage('listening', 'help')
+      togglePopupState(true)
+      emitEvent('handsfree-command', { command: 'help' })
+    })
+
+    addCommand(model.scrollUp, () => {
+      window.scrollBy({ top: -300, behavior: 'smooth' })
+      emitEvent('handsfree-command', { command: 'scroll up' })
+    })
+
+    addCommand(model.scrollDown, () => {
+      window.scrollBy({ top: 300, behavior: 'smooth' })
+      emitEvent('handsfree-command', { command: 'scroll down' })
+    })
+
+    addCommand(model.exit, () => {
+      setStage('listening')
+      emitEvent('handsfree-command', { command: 'exit' })
+    })
+
+    addCommand(model.goToInstructions, () => {
+      if (!instructionsElement) cacheElements()
+      if (instructionsElement) {
+        scrollToElement(instructionsElement)
+        emitEvent('handsfree-command', { command: 'go to instructions' })
+      }
+      setStage('listening')
       togglePopupState(false)
-    }
-  })
+    })
 
-  addCommand(model.nextStep, () => {
-    if (steps.length === 0) {
-      cacheElements()
-    }
+    addCommand(model.goToIngredients, () => {
+      if (!ingredientsElement) cacheElements()
+      if (ingredientsElement) {
+        scrollToElement(ingredientsElement)
+        emitEvent('handsfree-command', { command: 'go to ingredients' })
+      }
+      setStage('listening')
+      togglePopupState(false)
+    })
 
-    if (currentStepIndex < steps.length - 1) {
-      currentStepIndex += 1
-      scrollToStep()
-      emitEvent('handsfree-command', { command: 'next step' })
-    }
-  })
+    addCommand(model.nextStep, () => {
+      if (steps.length === 0) cacheElements()
+      if (currentStepIndex < steps.length - 1) {
+        currentStepIndex += 1
+        scrollToStep()
+        emitEvent('handsfree-command', { command: 'next step' })
+      }
+    })
 
-  addCommand(model.previousStep, () => {
-    if (steps.length === 0) {
-      cacheElements()
-    }
+    addCommand(model.previousStep, () => {
+      if (steps.length === 0) cacheElements()
+      if (currentStepIndex > 0) {
+        currentStepIndex -= 1
+        scrollToStep()
+        emitEvent('handsfree-command', { command: 'previous step' })
+      }
+    })
 
-    if (currentStepIndex > 0) {
-      currentStepIndex -= 1
-      scrollToStep()
-      emitEvent('handsfree-command', { command: 'previous step' })
-    }
-  })
+    addCommand(model.letsCook, () => {
+      toggleListening(true)
+      setStage('listening')
+      togglePopupState(false)
+      emitEvent('handsfree-command', { command: "let's cook" })
+    })
 
-  addCommand(model.letsCook, () => {
-    toggleListening(true)
-    updateCurrentStage('listening')
-    togglePopupState(false)
-    emitEvent('handsfree-command', { command: "let's cook" })
-  })
+    addCommand(model.imDone, () => {
+      emitEvent('handsfree-command', { command: "i'm done" })
+    })
 
-  addCommand(model.imDone, () => {
-    emitEvent('handsfree-command', { command: "i'm done" })
+    return cmds
   })
 
   return { commands, destroy: () => observer.disconnect() }

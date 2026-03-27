@@ -1,238 +1,186 @@
 import SpeakRecognition from './speak-recognition'
 
-let speakRecognizer
-let speechRecognizer
-let waitingForResultTimeout
-let waitingForActivityTimeout
-let speaking
-
-let stopped = false
-
 function isAndroid() {
   return /Android/i.test(navigator.userAgent)
 }
 
-let onUserSpeech
-let onUserSpeak
-
 const ACTIVITY_TIMEOUT = 2 * 60 * 1000
 const SPEECH_TIMEOUT = 3 * 1000
 
-const defaultState = {
+const DEFAULT_CONFIG = {
+  lang: 'en-US',
+  interimResults: true,
+  maxAlternatives: 10
+}
+
+const DEFAULT_STATE = {
   error: null,
   status: 'stopped',
   transcriptions: [],
   finalTranscriptions: false
 }
 
-const notifySpeechRecognizerState = (props = {}) => {
-  onUserSpeech({
-    ...defaultState,
-    ...props
-  })
-}
+const MAX_RESTART_RETRIES = 5
 
-const defaultConfig = {
-  lang: 'en-US',
-  interimResults: true,
-  maxAlternatives: 10
-}
+export function createContinuesMode() {
+  let speakRecognizer
+  let speechRecognizer
+  let waitingForResultTimeout
+  let waitingForActivityTimeout
+  let speaking = false
+  let stopped = false
+  let onUserSpeech
+  let onUserSpeak
+  let restartRetries = 0
 
-function clearAllTimeouts() {
-  clearTimeout(waitingForResultTimeout)
-  clearTimeout(waitingForActivityTimeout)
-}
-
-function abortSpeechRecognizer() {
-  clearAllTimeouts()
-  speechRecognizer.abort()
-  notifySpeechRecognizerState()
-  if (!isAndroid()) {
-    onUserSpeak(0)
+  function notifyState(props = {}) {
+    onUserSpeech({ ...DEFAULT_STATE, ...props })
   }
-}
 
-function stopSpeechRecognizer() {
-  clearAllTimeouts()
-  if (speechRecognizer) {
-    speechRecognizer.stop()
+  function clearAllTimeouts() {
+    clearTimeout(waitingForResultTimeout)
+    clearTimeout(waitingForActivityTimeout)
   }
-  notifySpeechRecognizerState()
-  if (!isAndroid()) {
-    onUserSpeak(0)
-  }
-}
 
-function startSpeechRecognizer() {
-  notifySpeechRecognizerState({
-    status: 'starting'
-  })
-  if (!isAndroid()) {
-    onUserSpeak(0)
+  function abortSpeechRecognizer() {
+    clearAllTimeouts()
+    speechRecognizer.abort()
+    notifyState()
+    if (!isAndroid()) onUserSpeak(0)
   }
-  try {
-    speechRecognizer.start()
-  } catch (err) {
-    console.error(err)
-  }
-}
 
-function delayedStartSpeechRecognizer() {
-  try {
+  function stopSpeechRecognizer() {
+    clearAllTimeouts()
+    if (speechRecognizer) speechRecognizer.stop()
+    notifyState()
+    if (!isAndroid()) onUserSpeak(0)
+  }
+
+  function startSpeechRecognizer() {
+    notifyState({ status: 'starting' })
+    if (!isAndroid()) onUserSpeak(0)
+    try {
+      speechRecognizer.start()
+      restartRetries = 0
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  function delayedStartSpeechRecognizer() {
+    if (restartRetries >= MAX_RESTART_RETRIES) {
+      console.warn('[HandsfreeCooking] Max restart retries reached')
+      return
+    }
+    restartRetries += 1
     setTimeout(startSpeechRecognizer, 100)
-  } catch (error) {
-    delayedStartSpeechRecognizer()
   }
-}
 
-function stopSpeakRecognizer() {
-  if (speakRecognizer) {
-    speakRecognizer.stop()
+  function stopSpeakRecognizer() {
+    if (speakRecognizer) speakRecognizer.stop()
+    if (!isAndroid()) onUserSpeak(0)
   }
-  if (!isAndroid()) {
-    onUserSpeak(0)
-  }
-}
 
-function handleOnEnd() {
-  clearAllTimeouts()
-  notifySpeechRecognizerState()
-  if (!isAndroid()) {
-    onUserSpeak(0)
+  function handleOnEnd() {
+    clearAllTimeouts()
+    notifyState()
+    if (!isAndroid()) onUserSpeak(0)
+    if (!stopped) delayedStartSpeechRecognizer()
   }
-  if (!stopped) {
-    delayedStartSpeechRecognizer()
-  }
-}
 
-function handleOnStart() {
-  notifySpeechRecognizerState({
-    status: 'recording'
-  })
-  if (!isAndroid()) {
-    onUserSpeak(0)
+  function handleOnStart() {
+    notifyState({ status: 'recording' })
+    if (!isAndroid()) onUserSpeak(0)
   }
-}
 
-function updateHandleResultTimeout(transcriptions, isFinal) {
-  clearTimeout(waitingForResultTimeout)
-  if (!isFinal) {
-    waitingForResultTimeout = setTimeout(() => {
-      notifySpeechRecognizerState({
-        finalTranscriptions: true,
-        status: 'recording',
-        transcriptions
-      })
-      abortSpeechRecognizer()
-    }, SPEECH_TIMEOUT)
+  function updateHandleResultTimeout(transcriptions, isFinal) {
+    clearTimeout(waitingForResultTimeout)
+    if (!isFinal) {
+      waitingForResultTimeout = setTimeout(() => {
+        notifyState({
+          finalTranscriptions: true,
+          status: 'recording',
+          transcriptions
+        })
+        abortSpeechRecognizer()
+      }, SPEECH_TIMEOUT)
+    }
   }
-}
 
-function handleResult(result) {
-  if (!result || !result.results) {
-    return
+  function handleResult(result) {
+    if (!result || !result.results) return
+    const recognition = result.results[result.resultIndex]
+    const transcriptions = Object.values(recognition).map((text) => ({
+      confidence: text.confidence,
+      text: text.transcript
+    }))
+    notifyState({
+      finalTranscriptions: recognition.isFinal,
+      status: 'recording',
+      transcriptions
+    })
+    updateHandleResultTimeout(transcriptions, recognition.isFinal)
   }
-  const recognition = result.results[result.resultIndex]
-  const transcriptions = Object.values(recognition).map((text) => ({
-    confidence: text.confidence,
-    text: text.transcript
-  }))
-  notifySpeechRecognizerState({
-    finalTranscriptions: recognition.isFinal,
-    status: 'recording',
-    transcriptions
-  })
-  updateHandleResultTimeout(transcriptions, recognition.isFinal)
-}
 
-function handleError(event) {
-  notifySpeechRecognizerState({
-    error: event.error,
-    status: 'error'
-  })
-  if (!isAndroid()) {
-    onUserSpeak(0)
+  function handleError(event) {
+    notifyState({ error: event.error, status: 'error' })
+    if (!isAndroid()) onUserSpeak(0)
   }
-}
 
-function handleWaitingForActivityTimeout() {
-  if (!speaking) {
-    abortSpeechRecognizer()
+  function handleWaitingForActivityTimeout() {
+    if (!speaking) abortSpeechRecognizer()
   }
-}
 
-function startSpeakRecognizer() {
-  speakRecognizer = new SpeakRecognition({
-    onSpeaking: () => {
-      speaking = true
-    },
-    onStopSpeaking: () => {
-      speaking = false
-      clearTimeout(waitingForActivityTimeout)
-      waitingForActivityTimeout = setTimeout(handleWaitingForActivityTimeout, ACTIVITY_TIMEOUT)
-    },
-    onVolumeChange: (volume) => {
-      if (!isAndroid()) {
-        onUserSpeak(volume)
+  function startSpeakRecognizer() {
+    speakRecognizer = new SpeakRecognition({
+      onSpeaking: () => { speaking = true },
+      onStopSpeaking: () => {
+        speaking = false
+        clearTimeout(waitingForActivityTimeout)
+        waitingForActivityTimeout = setTimeout(handleWaitingForActivityTimeout, ACTIVITY_TIMEOUT)
+      },
+      onVolumeChange: (volume) => {
+        if (!isAndroid()) onUserSpeak(volume)
       }
-    }
-  })
-  if (!isAndroid()) {
-    onUserSpeak(0)
-  }
-  speakRecognizer.start()
-}
-
-function initSpeechRecognition({ lang, interimResults, maxAlternatives }) {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-  speechRecognizer = new SpeechRecognition()
-  speechRecognizer.continuous = true
-  speechRecognizer.lang = lang
-  speechRecognizer.interimResults = interimResults
-  speechRecognizer.maxAlternatives = maxAlternatives
-
-  speechRecognizer.onstart = handleOnStart
-  speechRecognizer.onresult = handleResult
-  speechRecognizer.onerror = handleError
-  speechRecognizer.onend = handleOnEnd
-}
-
-export function init(config) {
-  const updatedConfig = {
-    ...defaultConfig,
-    ...config
-  }
-  onUserSpeech = config.onUserSpeech
-  if (!isAndroid()) {
-    onUserSpeak = config.onUserSpeak
+    })
+    if (!isAndroid()) onUserSpeak(0)
+    speakRecognizer.start()
   }
 
-  initSpeechRecognition(updatedConfig)
-}
+  function initSpeechRecognition({ lang, interimResults, maxAlternatives }) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    speechRecognizer = new SpeechRecognition()
+    speechRecognizer.continuous = true
+    speechRecognizer.lang = lang
+    speechRecognizer.interimResults = interimResults
+    speechRecognizer.maxAlternatives = maxAlternatives
 
-export function start() {
-  stopped = false
-  if (!isAndroid()) {
-    if (onUserSpeak) {
-      startSpeakRecognizer()
-    }
+    speechRecognizer.onstart = handleOnStart
+    speechRecognizer.onresult = handleResult
+    speechRecognizer.onerror = handleError
+    speechRecognizer.onend = handleOnEnd
   }
 
-  if (onUserSpeech) {
-    startSpeechRecognizer()
-  }
-}
-
-export function stop() {
-  stopped = true
-  clearAllTimeouts()
-  if (!isAndroid()) {
-    if (onUserSpeak) {
-      stopSpeakRecognizer()
-    }
+  function init(config) {
+    const updatedConfig = { ...DEFAULT_CONFIG, ...config }
+    onUserSpeech = config.onUserSpeech
+    if (!isAndroid()) onUserSpeak = config.onUserSpeak
+    initSpeechRecognition(updatedConfig)
   }
 
-  if (onUserSpeech) {
-    stopSpeechRecognizer()
+  function start() {
+    stopped = false
+    restartRetries = 0
+    if (!isAndroid() && onUserSpeak) startSpeakRecognizer()
+    if (onUserSpeech) startSpeechRecognizer()
   }
+
+  function stop() {
+    stopped = true
+    clearAllTimeouts()
+    if (!isAndroid() && onUserSpeak) stopSpeakRecognizer()
+    if (onUserSpeech) stopSpeechRecognizer()
+  }
+
+  return { init, start, stop }
 }

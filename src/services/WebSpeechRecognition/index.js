@@ -1,34 +1,24 @@
-import * as SpeechRecognitionContinuesMode from './speech-recognition-continues-mode'
-import * as SpeechRecognitionStepMode from './speech-recognition-step-mode'
+import { createContinuesMode } from './speech-recognition-continues-mode'
+import { createStepMode } from './speech-recognition-step-mode'
 
-const currentLang = navigator.language || navigator.userLanguage || 'en-US'
-let speechRecognition
+const currentLang = navigator.language || 'en-US'
 
-function init({
+function createRecognizer({
   continuesRecognition = true,
   lang = currentLang,
   onUserSpeech,
   onUserSpeak
 }) {
-  if (speechRecognition && speechRecognition.stop) {
-    speechRecognition.stop()
-  }
-  if (continuesRecognition) {
-    speechRecognition = SpeechRecognitionContinuesMode
-  } else {
-    speechRecognition = SpeechRecognitionStepMode
-  }
-  speechRecognition.init({
-    lang,
-    onUserSpeech,
-    onUserSpeak
-  })
+  const instance = continuesRecognition ? createContinuesMode() : createStepMode()
+
+  instance.init({ lang, onUserSpeech, onUserSpeak })
+
   return {
-    start: speechRecognition.start,
-    stop: speechRecognition.stop
+    start: instance.start,
+    stop: instance.stop
   }
 }
 
 export default {
-  init
+  init: createRecognizer
 }

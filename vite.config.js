@@ -2,10 +2,10 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
-export default defineConfig({
-  define: {
-    'process.env.NODE_ENV': JSON.stringify('production')
-  },
+export default defineConfig(({ mode }) => ({
+  define: mode === 'production'
+    ? { 'process.env.NODE_ENV': JSON.stringify('production') }
+    : {},
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'src')
@@ -29,4 +29,4 @@ export default defineConfig({
       }
     }
   }
-})
+}))

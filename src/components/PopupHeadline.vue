@@ -1,6 +1,7 @@
 <template>
   <button
     class="hf-headline"
+    :aria-label="title + ' - ' + (isCloseState ? 'Close' : 'Toggle')"
     @click="togglePopup"
   >
     <HfIcon

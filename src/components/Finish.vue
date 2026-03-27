@@ -67,6 +67,14 @@ import { useVoiceState } from '@/composables/useVoiceState'
 import PopupHeadline from '@/components/PopupHeadline.vue'
 import HfIcon from '@/components/HfIcon.vue'
 
+function debounce(fn, delay) {
+  let timer = null
+  return (...args) => {
+    clearTimeout(timer)
+    timer = setTimeout(() => fn(...args), delay)
+  }
+}
+
 export default {
   components: {
     HfIcon,
@@ -129,13 +137,15 @@ export default {
       })
     }
 
+    const debouncedCheckVoteLayout = debounce(checkVoteLayout, 200)
+
     onMounted(() => {
       checkVoteLayout()
-      window.addEventListener('resize', checkVoteLayout)
+      window.addEventListener('resize', debouncedCheckVoteLayout)
     })
 
     onBeforeUnmount(() => {
-      window.removeEventListener('resize', checkVoteLayout)
+      window.removeEventListener('resize', debouncedCheckVoteLayout)
     })
 
     return {

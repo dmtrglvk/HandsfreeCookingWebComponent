@@ -25,6 +25,7 @@
       <div class="hf-introduction-buttons">
         <button
           class="hf-button"
+          aria-label="Previous step"
           :disabled="currentStep < 1"
           @click="goToPrevStep"
         >
@@ -35,6 +36,7 @@
         </button>
         <button
           class="hf-button"
+          aria-label="Next step"
           @click="goToNextStep"
         >
           <HfIcon
@@ -99,9 +101,10 @@ export default {
     }
 
     const goToNextStep = () => {
-      currentStep.value += 1
-      if (currentStep.value === props.translations.steps.length) {
-        voiceState.updateCurrentStage('listening')
+      if (currentStep.value < props.translations.steps.length - 1) {
+        currentStep.value += 1
+      } else {
+        voiceState.setStage('listening')
         voiceState.togglePopupState(false)
       }
     }

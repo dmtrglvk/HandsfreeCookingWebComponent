@@ -21,7 +21,11 @@
             >
               <strong class="hf-tooltip-title">
                 {{ mergedTranslations.tooltip.title }}
-                <span @click="isTooltipVisible = false">
+                <span
+                  role="button"
+                  aria-label="Close tooltip"
+                  @click="isTooltipVisible = false"
+                >
                   <HfIcon
                     icon="close"
                     :size="24"
@@ -34,7 +38,7 @@
         </span>
       </div>
       <button
-        v-if="currentStage !== 'listening' && !isListeningStage"
+        v-if="stage !== 'listening'"
         class="hf-button hf-button--handsfree"
         @click="startHandsFreeFlow"
       >
@@ -45,7 +49,7 @@
         {{ mergedTranslations.letsCook }}
       </button>
       <button
-        v-if="isListeningStage"
+        v-if="stage === 'listening'"
         class="hf-button hf-button--handsfree"
         @click="finishHandsFreeFlow"
       >
@@ -59,14 +63,20 @@
 
     <div
       class="hf-popup"
+      role="dialog"
+      aria-label="Handsfree cooking assistant"
+      :aria-hidden="stage === null"
       :class="{
         'hf-popup--opened': isPopupOpened,
-        'hf-popup--hidden': currentStage === null,
-        'hf-not-recognized': isNotRecognizedStage || isNotRecognizedStageError,
-        'hf-error-state': isNotRecognizedStageError
+        'hf-popup--hidden': stage === null,
+        'hf-not-recognized': isNotRecognized || isNotRecognizedError,
+        'hf-error-state': isNotRecognizedError
       }"
     >
-      <template v-if="currentStage && currentStage.includes('introduction')">
+      <div aria-live="polite" class="hf-sr-only">
+        {{ statusAnnouncement }}
+      </div>
+      <template v-if="isIntroductionVisible">
         <Introduction
           :translations="mergedTranslations.introduction"
           :is-loading="isLoading"
@@ -75,7 +85,7 @@
           @begin-listening="beginListening"
         />
       </template>
-      <template v-if="currentStage === 'not-allowed'">
+      <template v-if="stage === 'not-allowed'">
         <Popup
           :translations="mergedTranslations.notAllowed"
           :is-loading="isLoading"
@@ -84,14 +94,14 @@
           @button-action="requestMicrophoneAccess"
         />
       </template>
-      <template v-if="currentStage === 'listening'">
+      <template v-if="stage === 'listening' && subState === null">
         <Popup
           :translations="mergedTranslations.listening"
           :is-loading="isLoading"
           @toggle-popup="openHelp"
         />
       </template>
-      <template v-if="isHelpStage">
+      <template v-if="isHelpVisible">
         <Popup
           :translations="mergedTranslations.help"
           :is-loading="isLoading"
@@ -99,21 +109,21 @@
           @button-action="finishHandsFreeFlow"
         />
       </template>
-      <template v-if="isNotRecognizedStage">
+      <template v-if="isNotRecognized">
         <Popup
           :translations="mergedTranslations.notRecognized"
           :is-loading="isLoading"
           @toggle-popup="openHelp"
         />
       </template>
-      <template v-if="isNotRecognizedStageError">
+      <template v-if="isNotRecognizedError">
         <Popup
           :translations="mergedTranslations.notRecognizedError"
           :is-loading="isLoading"
           @toggle-popup="openHelp"
         />
       </template>
-      <template v-if="currentStage === 'not-supported'">
+      <template v-if="stage === 'not-supported'">
         <Popup
           additional-classname="hf-hide-chevron"
           :translations="mergedTranslations.notSupported"
@@ -128,20 +138,13 @@
           @toggle-popup="togglePopup"
         />
       </template>
-      <template v-if="currentStage === 'finish'">
+      <template v-if="stage === 'finish'">
         <Finish
           :translations="mergedTranslations.finish"
           @close-hands-free-flow="closeHandsFreeFlow"
           @toggle-popup="togglePopup"
         />
       </template>
-      <button
-        ref="fakeButton"
-        class="hf-hidden-button"
-        @click="runCommand"
-      >
-        Run Command
-      </button>
     </div>
   </div>
 </template>
@@ -282,13 +285,7 @@ export default {
     const voiceState = createVoiceState()
     provideVoiceState(voiceState)
 
-    const {
-      state,
-      toggleHelpStage,
-      toggleListening,
-      togglePopupState,
-      updateCurrentStage
-    } = voiceState
+    const { state, setStage, toggleListening, togglePopupState } = voiceState
 
     const instance = getCurrentInstance()
 
@@ -339,38 +336,51 @@ export default {
       props.lang || document.documentElement.lang || 'en'
     )
 
-    const { commands: registeredCommands, destroy: destroyCommands } = useCommands(
-      mergedCommands.value,
-      selectors.value,
+    const { commands: commandsRef, destroy: destroyCommands } = useCommands(
+      mergedCommands,
+      selectors,
       voiceState,
       emitEvent
     )
-    const commandsRef = ref(registeredCommands)
 
     const speechRecognizer = ref(null)
     const isTooltipVisible = ref(false)
     const tooltip = ref(null)
-    const fakeButton = ref(null)
-    const lastCommand = ref(null)
     const counter = ref(0)
     const isLoading = ref(false)
     const isError = ref(false)
     const isRecognizing = ref(false)
     const webSpeechFeatureStatus = ref(null)
 
+    const stage = computed(() => state.stage)
+    const subState = computed(() => state.subState)
     const isPopupOpened = computed(() => state.isPopupOpened)
-    const isHelpStage = computed(() => state.isHelpStage)
-    const currentStage = computed(() => state.currentStage)
 
-    const isListeningStage = computed(() => currentStage.value && currentStage.value.includes('listening'))
-    const isNotRecognizedStage = computed(() => currentStage.value && currentStage.value.includes('not-recognized'))
-    const isNotRecognizedStageError = computed(() => currentStage.value && currentStage.value.includes('recognized-error'))
-    const isAlmostDone = computed(() => currentStage.value && currentStage.value.includes('almost-done'))
+    const isIntroductionVisible = computed(() =>
+      state.stage === 'introduction' || (state.stage === 'listening' && state.subState === 'intro')
+    )
+    const isHelpVisible = computed(() =>
+      state.stage === 'listening' && state.subState === 'help'
+    )
+    const isNotRecognized = computed(() =>
+      state.stage === 'listening' && state.subState === 'not-recognized'
+    )
+    const isNotRecognizedError = computed(() =>
+      state.stage === 'listening' && state.subState === 'recognized-error'
+    )
+    const isAlmostDone = computed(() =>
+      state.stage === 'listening' && state.subState === 'almost-done'
+    )
+
+    const statusAnnouncement = computed(() => {
+      if (isNotRecognized.value) return mergedTranslations.value.notRecognized.title
+      if (isNotRecognizedError.value) return mergedTranslations.value.notRecognizedError.title
+      if (state.stage === 'listening' && state.subState === null) return mergedTranslations.value.listening.title
+      return ''
+    })
 
     let hasTrackedInitialStart = false
     let flowFinished = false
-    let restarted = false
-    let restartInterval = null
 
     function restartRecognition() {
       if (!speechRecognizer.value || flowFinished) return
@@ -383,14 +393,14 @@ export default {
         if (!isRecognizing.value) {
           try {
             speechRecognizer.value.start()
-          } catch (e) {
+          } catch (_e) {
             setTimeout(() => {
               try {
                 if (!isRecognizing.value) {
                   speechRecognizer.value.start()
                 }
-              } catch (e2) {
-                console.error('[HandsfreeCooking] Restart failed:', e2)
+              } catch (retryErr) {
+                console.error('[HandsfreeCooking] Restart failed:', retryErr)
               }
             }, 1000)
           }
@@ -475,45 +485,38 @@ export default {
 
       if (foundCommand) {
         if (!isAlmostDone.value) {
-          toggleHelpStage(false)
+          setStage('listening')
           togglePopupState(false)
-          updateCurrentStage('listening')
         }
         if (isAlmostDone.value && mergedCommands.value.imDone.includes(foundCommand)) {
-          updateCurrentStage('finish')
+          setStage('finish')
           finishListening()
           emitEvent('handsfree-finished', { reason: 'completed recipe flow' })
         }
-        lastCommand.value = foundCommand
         counter.value = 0
 
         requestAnimationFrame(() => {
-          if (fakeButton.value) {
-            fakeButton.value.click()
-          } else if (commandsRef.value[foundCommand]) {
+          if (commandsRef.value[foundCommand]) {
             commandsRef.value[foundCommand]()
-            lastCommand.value = null
           }
         })
       } else {
         counter.value += 1
-        if (!currentStage.value.includes('help')) {
-          updateCurrentStage('listening not-recognized')
-          toggleHelpStage(false)
+        if (state.subState !== 'help') {
+          setStage('listening', 'not-recognized')
           togglePopupState(false)
         }
         if (counter.value > 3) {
-          updateCurrentStage('listening recognized-error')
+          setStage('listening', 'recognized-error')
         }
       }
     }
 
     const handleIntroduction = (command) => {
       if (mergedCommands.value.letsCook.includes(command) && commandsRef.value[command]) {
-        lastCommand.value = command
         setTimeout(() => {
-          if (fakeButton.value) {
-            fakeButton.value.click()
+          if (commandsRef.value[command]) {
+            commandsRef.value[command]()
           }
         }, 100)
       }
@@ -523,12 +526,12 @@ export default {
 
     const startHandsFreeFlow = () => {
       flowFinished = false
-      updateCurrentStage('introduction')
+      setStage('introduction')
       emitEvent('handsfree-activated')
 
       if (!SpeechRecognition) {
         emitEvent('handsfree-error', { error: 'browser-not-supported' })
-        updateCurrentStage('not-supported')
+        setStage('not-supported')
       } else {
         let hasStarted = false
 
@@ -549,7 +552,7 @@ export default {
 
             if (rec.status === 'error' && (rec.error === 'not-allowed' || rec.error === 'service-not-allowed')) {
               isError.value = true
-              updateCurrentStage('not-allowed')
+              setStage('not-allowed')
               toggleListening(false)
               speechRecognizer.value.stop()
               emitEvent('handsfree-error', { error: 'microphone-not-allowed' })
@@ -571,7 +574,7 @@ export default {
                 isLoading.value = false
                 const speech = rec.transcriptions[0].text.toLowerCase().trim()
 
-                if (currentStage.value.includes('introduction')) {
+                if (isIntroductionVisible.value) {
                   handleIntroduction(speech)
                 } else {
                   handleCommand(speech)
@@ -589,29 +592,20 @@ export default {
         speechRecognizer.value.stop()
       }
       flowFinished = true
-      toggleHelpStage(false)
       toggleListening(false)
       togglePopupState(true)
       isRecognizing.value = false
     }
 
     const finishHandsFreeFlow = () => {
-      updateCurrentStage('finish')
+      setStage('finish')
       finishListening()
       emitEvent('handsfree-finished', { reason: 'stop-cooking-button' })
     }
 
     const openHelp = () => {
       togglePopupState(true)
-      toggleHelpStage(true)
-      updateCurrentStage('listening help')
-    }
-
-    const runCommand = () => {
-      if (lastCommand.value && commandsRef.value[lastCommand.value]) {
-        commandsRef.value[lastCommand.value]()
-        lastCommand.value = null
-      }
+      setStage('listening', 'help')
     }
 
     const beginListening = () => {
@@ -623,27 +617,28 @@ export default {
             console.warn('[HandsfreeCooking] Cannot start recognizer:', e)
           }
         }
-        updateCurrentStage('listening introduction')
+        setStage('listening', 'intro')
         emitEvent('handsfree-state-change', { stage: 'listening', isListening: true })
       } else {
-        updateCurrentStage('not-allowed')
+        setStage('not-allowed')
       }
     }
 
-    function requestMicrophoneAccess() {
-      /* eslint-disable-next-line no-alert */
-      alert('Microphone access is blocked. Please enable it in browser settings.')
-      emitEvent('handsfree-error', { error: 'microphone-blocked' })
+    async function requestMicrophoneAccess() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+        stream.getTracks().forEach((track) => track.stop())
+        isError.value = false
+        startHandsFreeFlow()
+      } catch (_e) {
+        emitEvent('handsfree-error', { error: 'microphone-blocked' })
+      }
     }
 
     const togglePopup = () => {
-      if (state.isPopupOpened) {
-        togglePopupState(false)
-      } else {
-        togglePopupState(true)
-      }
+      togglePopupState(!state.isPopupOpened)
       emitEvent('handsfree-state-change', {
-        stage: currentStage.value,
+        stage: state.stage,
         isListening: state.isListening,
         isPopupOpened: state.isPopupOpened
       })
@@ -651,44 +646,53 @@ export default {
 
     const continueListening = () => {
       togglePopupState(false)
-      toggleHelpStage(false)
-      updateCurrentStage('listening')
+      setStage('listening')
     }
 
     const closeHandsFreeFlow = () => {
       if (!state.isListening && speechRecognizer.value) {
         speechRecognizer.value.stop()
-        updateCurrentStage(null)
+        setStage(null)
       } else {
         togglePopup()
       }
     }
 
-    onMounted(() => {
-      restartInterval = setInterval(() => {
-        if (
-          webSpeechFeatureStatus.value === 'stopped' &&
-          currentStage.value === 'listening' &&
-          !flowFinished &&
-          !restarted &&
-          !isRecognizing.value
-        ) {
-          restartRecognition()
-          restarted = true
+    const handleKeydown = (event) => {
+      if (event.key === 'Escape') {
+        if (isTooltipVisible.value) {
+          isTooltipVisible.value = false
+          return
         }
+        if (state.isPopupOpened && state.stage !== null) {
+          if (state.subState === 'help') {
+            continueListening()
+          } else {
+            closeHandsFreeFlow()
+          }
+        }
+      }
+    }
 
-        if (webSpeechFeatureStatus.value === 'listening' && restarted) {
-          restarted = false
-        }
-      }, 1000)
+    watch(webSpeechFeatureStatus, (status) => {
+      if (
+        status === 'stopped' &&
+        state.stage === 'listening' &&
+        !flowFinished &&
+        !isRecognizing.value
+      ) {
+        restartRecognition()
+      }
+    })
+
+    onMounted(() => {
+      document.addEventListener('keydown', handleKeydown)
     })
 
     onUnmounted(() => {
+      document.removeEventListener('keydown', handleKeydown)
       document.removeEventListener('click', handleClickOutside, true)
       if (outsideClickRaf) cancelAnimationFrame(outsideClickRaf)
-      if (restartInterval) {
-        clearInterval(restartInterval)
-      }
       try {
         if (speechRecognizer.value) {
           speechRecognizer.value.stop()
@@ -702,25 +706,25 @@ export default {
 
     return {
       isPopupOpened,
-      currentStage,
-      isListeningStage,
-      isHelpStage,
-      isNotRecognizedStage,
-      isNotRecognizedStageError,
+      stage,
+      subState,
+      isIntroductionVisible,
+      isHelpVisible,
+      isNotRecognized,
+      isNotRecognizedError,
       isAlmostDone,
       isTooltipVisible,
       mergedTranslations,
       mergedCommands,
       tooltip,
-      fakeButton,
       isLoading,
+      statusAnnouncement,
       toggleTooltip,
       openHelp,
       startHandsFreeFlow,
       finishHandsFreeFlow,
       togglePopup,
       requestMicrophoneAccess,
-      runCommand,
       beginListening,
       continueListening,
       closeHandsFreeFlow
@@ -765,6 +769,20 @@ export default {
 
 .hf-root {
   margin-bottom: var(--hf-spacing-m);
+}
+
+/* ---- Screen reader only ---- */
+
+.hf-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ---- Trigger area ---- */
@@ -940,7 +958,7 @@ export default {
   z-index: var(--hf-z-index);
   box-shadow: var(--hf-popup-shadow);
   padding: var(--hf-spacing-s);
-  transition: bottom 0.3s ease;
+  transition: bottom 0.3s ease, opacity 0.3s ease;
 }
 
 .hf-popup--hidden {
@@ -1147,14 +1165,6 @@ export default {
   display: flex;
   align-items: center;
   gap: var(--hf-spacing-xxs);
-}
-
-/* ---- Hidden button ---- */
-
-.hf-hidden-button {
-  position: absolute;
-  left: -9999px;
-  opacity: 0;
 }
 
 /* ---- Print ---- */
