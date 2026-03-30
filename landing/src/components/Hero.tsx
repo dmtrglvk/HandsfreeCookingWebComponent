@@ -56,8 +56,11 @@ export default function Hero() {
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-all flex items-center justify-center">
-                  <div className="w-16 h-16 md:w-20 md:h-20 bg-brand/90 rounded-full flex items-center justify-center group-hover:bg-brand group-hover:scale-110 transition-all shadow-lg">
-                    <Play size={32} className="text-white ml-1" />
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="w-16 h-16 md:w-20 md:h-20 bg-brand/90 rounded-full flex items-center justify-center group-hover:bg-brand group-hover:scale-110 transition-all shadow-lg">
+                      <Play size={32} className="text-white ml-1" />
+                    </div>
+                    <p className="text-gray-700 font-lurpak-regular text-sm md:text-base">Watch Demo Video</p>
                   </div>
                 </div>
               </button>

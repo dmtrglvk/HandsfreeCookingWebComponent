@@ -1,13 +1,13 @@
-import { Github, FileText, Wrench } from 'lucide-react';
+import { Github, FileText, Mic } from 'lucide-react';
 
 export default function OpenSource() {
   const features = [
     {
-      icon: Wrench,
+      icon: FileText,
       text: 'Works on any CMS',
     },
     {
-      icon: Wrench,
+      icon: Mic,
       text: 'Powered by Google Voice API',
     },
     {

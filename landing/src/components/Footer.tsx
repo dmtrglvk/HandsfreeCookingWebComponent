@@ -26,7 +26,7 @@ export default function Footer() {
             </a>
           </div>
 
-          <div className="text-sm md:text-base text-white/80 font-lurpak-light">Powered by Lurpak®</div>
+          <div className="text-sm md:text-base text-white/80 font-lurpak-light">Created with Lurpak</div>
         </div>
       </div>
     </footer>

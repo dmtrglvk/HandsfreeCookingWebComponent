@@ -13,6 +13,11 @@ export default function Benefits() {
       description: 'Users stay engaged through the entire recipe',
     },
     {
+      icon: TrendingUp,
+      title: 'Higher completion rates',
+      description: 'More people finish what they start cooking',
+    },
+    {
       icon: Star,
       title: 'Stand out from other blogs',
       description: "Offer something your competitors don't have",
