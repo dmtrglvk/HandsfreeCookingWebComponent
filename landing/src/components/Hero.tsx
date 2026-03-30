@@ -20,14 +20,6 @@ export default function Hero() {
             Add voice control to your recipes in minutes. No app. No rebuild.
           </p>
 
-          <div className="mb-10 md:mb-12 lg:mb-16">
-            <img
-              src="/PoweredByLurpakandGoogle.png"
-              alt="Powered by Lurpak and Google"
-              className="h-8 md:h-10 lg:h-12 mx-auto"
-            />
-          </div>
-
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4 mb-12 md:mb-16 lg:mb-20">
             <a
               href="#get-started"
@@ -48,10 +40,10 @@ export default function Hero() {
             {!videoLoaded ? (
               <button
                 onClick={handlePlayClick}
-                className="relative w-full aspect-video group cursor-pointer overflow-hidden"
+                className="relative w-full aspect-video group cursor-pointer overflow-hidden block"
               >
                 <img
-                  src="/Screenshot_2026-03-24_at_14.53.29.png"
+                  src="./Screenshot_2026-03-24_at_14.53.29.png"
                   alt="Hands Free Cooking Demo"
                   className="w-full h-full object-cover"
                 />
@@ -60,7 +52,7 @@ export default function Hero() {
                     <div className="w-16 h-16 md:w-20 md:h-20 bg-brand/90 rounded-full flex items-center justify-center group-hover:bg-brand group-hover:scale-110 transition-all shadow-lg">
                       <Play size={32} className="text-white ml-1" />
                     </div>
-                    <p className="text-gray-700 font-lurpak-regular text-sm md:text-base">Watch Demo Video</p>
+                    <p className="text-white font-bold font-lurpak-regular text-sm md:text-base">Watch Demo Video</p>
                   </div>
                 </div>
               </button>

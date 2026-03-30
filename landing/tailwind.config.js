@@ -10,10 +10,10 @@ export default {
         },
       },
       fontFamily: {
-        'lurpak-light': ['Lurpak Light', 'Inter', '-apple-system', 'system-ui', 'sans-serif'],
-        'lurpak-regular': ['Lurpak Regular', 'Inter', '-apple-system', 'system-ui', 'sans-serif'],
-        'lurpak-bold': ['Lurpak Bold', 'Inter', '-apple-system', 'system-ui', 'sans-serif'],
-        'lurpak-display': ['Lurpak Display', 'Lurpak Bold', 'Inter', '-apple-system', 'system-ui', 'sans-serif'],
+        'lurpak-light': ['Lurpak', 'Inter', '-apple-system', 'system-ui', 'sans-serif'],
+        'lurpak-regular': ['Lurpak', 'Inter', '-apple-system', 'system-ui', 'sans-serif'],
+        'lurpak-bold': ['Lurpak', 'Inter', '-apple-system', 'system-ui', 'sans-serif'],
+        'lurpak-display': ['Lurpak', 'Lurpak Bold', 'Inter', '-apple-system', 'system-ui', 'sans-serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.6s ease-in-out',

@@ -11,29 +11,30 @@
 }
 
 @font-face {
-  font-family: 'Lurpak Regular';
+  font-family: 'Lurpak';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: local('Inter'), local('system-ui');
+  src: url('/fonts/LurpakSans-Regular.woff2') format('woff2'),
+       url('/fonts/LurpakSans-Regular.woff') format('woff');
 }
 
 @font-face {
-  font-family: 'Lurpak Bold';
+  font-family: 'Lurpak';
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url('/fonts/LurpakDisplay.woff2') format('woff2'),
-       url('/fonts/LurpakDisplay.woff') format('woff');
+  src: url('/fonts/LurpakSans-Bold.woff2') format('woff2'),
+       url('/fonts/LurpakSans-Bold.woff') format('woff');
 }
 
 @font-face {
-  font-family: 'Lurpak Display';
+  font-family: 'Lurpak';
   font-style: normal;
-  font-weight: 400;
+  font-weight: 300;
   font-display: swap;
-  src: url('/fonts/LurpakDisplay.woff2') format('woff2'),
-       url('/fonts/LurpakDisplay.woff') format('woff');
+  src: url('/fonts/LurpakSans-Light.woff2') format('woff2'),
+       url('/fonts/LurpakSans-Light.woff') format('woff');
 }
 
 @layer base {
