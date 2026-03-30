@@ -147,6 +147,47 @@
       </template>
     </div>
   </div>
+
+  <Teleport to="body" :disabled="true">
+    <div
+      v-if="isDebugMode"
+      class="hf-debug"
+    >
+      <div class="hf-debug__header">🎤 HF Debug</div>
+      <table class="hf-debug__table">
+        <tr>
+          <td class="hf-debug__label">Lang</td>
+          <td class="hf-debug__value">{{ debugInfo.lang }}</td>
+        </tr>
+        <tr>
+          <td class="hf-debug__label">Status</td>
+          <td
+            class="hf-debug__value"
+            :class="'hf-debug__status--' + debugInfo.status"
+          >{{ debugInfo.status || '—' }}</td>
+        </tr>
+        <tr>
+          <td class="hf-debug__label">Stage</td>
+          <td class="hf-debug__value">{{ debugInfo.stage }}{{ debugInfo.subState ? ' / ' + debugInfo.subState : '' }}</td>
+        </tr>
+        <tr>
+          <td class="hf-debug__label">Interim</td>
+          <td class="hf-debug__value hf-debug__speech">{{ debugInfo.interim || '—' }}</td>
+        </tr>
+        <tr>
+          <td class="hf-debug__label">Final</td>
+          <td class="hf-debug__value hf-debug__speech">{{ debugInfo.final || '—' }}</td>
+        </tr>
+        <tr>
+          <td class="hf-debug__label">Matched</td>
+          <td
+            class="hf-debug__value"
+            :class="debugInfo.matched === 'no match' ? 'hf-debug__no-match' : 'hf-debug__matched'"
+          >{{ debugInfo.matched || '—' }}</td>
+        </tr>
+      </table>
+    </div>
+  </Teleport>
 </template>
 
 <script>
@@ -337,6 +378,32 @@ export default {
     const isRecognizing = ref(false)
     const webSpeechFeatureStatus = ref(null)
 
+    const isDebugMode = typeof window !== 'undefined' && (
+      window.location.hash.includes('debugHF') ||
+      new URLSearchParams(window.location.search).has('debugHF')
+    )
+
+    const debugInfo = ref({
+      lang: '',
+      status: '',
+      stage: '',
+      subState: '',
+      interim: '',
+      final: '',
+      matched: ''
+    })
+
+    watch(
+      () => [state.stage, state.subState],
+      ([newStage, newSubState]) => {
+        if (isDebugMode) {
+          debugInfo.value.stage = newStage ?? 'null'
+          debugInfo.value.subState = newSubState ?? ''
+        }
+      },
+      { immediate: true }
+    )
+
     const stage = computed(() => state.stage)
     const subState = computed(() => state.subState)
     const isPopupOpened = computed(() => state.isPopupOpened)
@@ -420,6 +487,10 @@ export default {
     const handleCommand = (recognizedSpeech) => {
       const foundCommand = findBestMatch(recognizedSpeech, Object.keys(commandsRef.value))
 
+      if (isDebugMode) {
+        debugInfo.value.matched = foundCommand || 'no match'
+      }
+
       if (foundCommand) {
         if (!isAlmostDone.value) {
           setStage('listening')
@@ -450,10 +521,18 @@ export default {
     }
 
     const handleIntroduction = (command) => {
-      if (mergedCommands.value.letsCook.includes(command) && commandsRef.value[command]) {
+      const foundCommand = findBestMatch(command, Object.keys(commandsRef.value))
+
+      if (isDebugMode) {
+        debugInfo.value.matched = foundCommand && mergedCommands.value.letsCook.includes(foundCommand)
+          ? foundCommand
+          : 'no match (intro)'
+      }
+
+      if (foundCommand && mergedCommands.value.letsCook.includes(foundCommand)) {
         setTimeout(() => {
-          if (commandsRef.value[command]) {
-            commandsRef.value[command]()
+          if (commandsRef.value[foundCommand]) {
+            commandsRef.value[foundCommand]()
           }
         }, 100)
       }
@@ -472,6 +551,13 @@ export default {
       } else {
         let hasStarted = false
 
+        if (isDebugMode) {
+          debugInfo.value.lang = selectedLanguage.value
+          debugInfo.value.matched = ''
+          debugInfo.value.interim = ''
+          debugInfo.value.final = ''
+        }
+
         speechRecognizer.value = WebSpeechRecognizer.init({
           lang: selectedLanguage.value,
           continuesRecognition: true,
@@ -481,6 +567,10 @@ export default {
               isRecognizing.value = false
             }
             webSpeechFeatureStatus.value = rec.status
+
+            if (isDebugMode) {
+              debugInfo.value.status = rec.error ? `${rec.status} (${rec.error})` : rec.status
+            }
 
             if (!hasStarted && rec.status === 'starting') {
               hasStarted = true
@@ -505,11 +595,20 @@ export default {
 
               if (rec.transcriptions.length && !rec.finalTranscriptions) {
                 isLoading.value = true
+                if (isDebugMode) {
+                  debugInfo.value.interim = rec.transcriptions[0].text
+                }
               }
 
               if (rec.finalTranscriptions) {
                 isLoading.value = false
                 const speech = rec.transcriptions[0].text.toLowerCase().trim()
+
+                if (isDebugMode) {
+                  debugInfo.value.interim = ''
+                  debugInfo.value.final = rec.transcriptions[0].text
+                  debugInfo.value.matched = ''
+                }
 
                 if (isIntroductionVisible.value) {
                   handleIntroduction(speech)
@@ -664,7 +763,9 @@ export default {
       requestMicrophoneAccess,
       beginListening,
       continueListening,
-      closeHandsFreeFlow
+      closeHandsFreeFlow,
+      isDebugMode,
+      debugInfo
     }
   }
 }
@@ -1119,4 +1220,76 @@ export default {
     transform: translateX(calc(-50% - 22px));
   }
 }
+
+/* ---- Debug panel ---- */
+
+.hf-debug {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  z-index: calc(var(--hf-z-index) + 100);
+  width: 320px;
+  background: rgba(0, 0, 0, 0.88);
+  color: #e0e0e0;
+  font-family: monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+.hf-debug__header {
+  background: #1a1a2e;
+  color: #7eb8f7;
+  font-weight: bold;
+  padding: 6px 10px;
+  letter-spacing: 0.05em;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.hf-debug__table {
+  width: 100%;
+  border-collapse: collapse;
+  padding: 4px 0;
+}
+
+.hf-debug__table tr:not(:last-child) {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.hf-debug__label {
+  color: #888;
+  padding: 4px 10px;
+  white-space: nowrap;
+  vertical-align: top;
+  width: 56px;
+}
+
+.hf-debug__value {
+  color: #e0e0e0;
+  padding: 4px 10px 4px 4px;
+  word-break: break-word;
+}
+
+.hf-debug__speech {
+  color: #f0d080;
+  font-style: italic;
+}
+
+.hf-debug__matched {
+  color: #6edb8f;
+  font-weight: bold;
+}
+
+.hf-debug__no-match {
+  color: #f07070;
+}
+
+.hf-debug__status--recording { color: #6edb8f; }
+.hf-debug__status--starting  { color: #f0d080; }
+.hf-debug__status--stopped   { color: #888; }
+.hf-debug__status--error     { color: #f07070; }
 </style>
