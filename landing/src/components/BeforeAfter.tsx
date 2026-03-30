@@ -7,7 +7,11 @@ export default function BeforeAfter() {
     { icon: Smartphone, title: 'No screen lock', description: 'Keep your screen on while you cook' },
     { icon: MousePointer, title: 'No scrolling', description: 'Navigate with your voice' },
     { icon: Volume2, title: 'No interruptions', description: 'Stay in the flow from start to finish' },
-    { icon: Globe, title: 'No app required', description: 'Works directly in the browser' },
+    {
+      icon: Globe,
+      title: 'No app required',
+      description: 'Runs in the page with the Web Speech API',
+    },
   ];
 
   return (

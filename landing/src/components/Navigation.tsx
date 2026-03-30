@@ -1,4 +1,5 @@
 import { Github, Menu, X } from 'lucide-react';
+import { GITHUB_REPO_URL } from '../site';
 import { useState, useEffect } from 'react';
 
 export default function Navigation() {
@@ -62,7 +63,9 @@ export default function Navigation() {
       </div>
 
       <a
-        href="#get-started"
+        href={GITHUB_REPO_URL}
+        target="_blank"
+        rel="noopener noreferrer"
         className="fixed top-4 right-4 sm:right-6 lg:right-8 z-[60] bg-brand text-white px-6 py-2.5 rounded-lg hover:bg-brand-dark transition-all hover:scale-105 font-lurpak-regular shadow-md min-h-[44px] flex items-center"
       >
         Get the code
@@ -82,7 +85,7 @@ export default function Navigation() {
               </a>
             ))}
             <a
-              href="https://github.com"
+              href={GITHUB_REPO_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 px-4 py-3 text-brand hover:bg-brand/5 transition-colors rounded-lg font-lurpak-regular"

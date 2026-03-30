@@ -10,7 +10,7 @@ export default function HowItWorks() {
     {
       icon: Mic,
       title: 'Voice control activates',
-      description: 'No configuration needed',
+      description: 'Speech recognition via the Web Speech API built into supporting browsers',
     },
     {
       icon: Check,
@@ -46,10 +46,14 @@ export default function HowItWorks() {
 
           <div className="bg-gray-900 rounded-xl md:rounded-2xl p-6 md:p-8 overflow-x-auto shadow-xl">
             <pre className="text-xs sm:text-sm md:text-base text-gray-100 font-mono">
-              <code>{`<script src="handsfreecooking.js"></script>
-<script>
-  HFC.init()
-</script>`}</code>
+              <code>{`<script src="handsfree-cooking.iife.js"></script>
+
+<handsfree-cooking
+  lang="en"
+  steps-selector=".recipe-step"
+  ingredients-selector="#ingredients"
+  instructions-selector="#instructions"
+></handsfree-cooking>`}</code>
             </pre>
           </div>
         </div>

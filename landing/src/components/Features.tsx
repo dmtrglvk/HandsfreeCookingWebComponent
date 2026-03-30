@@ -20,7 +20,7 @@ export default function Features() {
     {
       icon: Smartphone,
       title: 'No app required',
-      description: 'Works directly in the browser',
+      description: 'Runs in the browser with the Web Speech API',
     },
   ];
 

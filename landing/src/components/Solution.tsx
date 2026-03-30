@@ -16,8 +16,8 @@ export default function Solution() {
           </h2>
 
           <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-gray-600 font-lurpak-light leading-relaxed max-w-4xl mx-auto">
-            Hands Free Cooking lets your readers navigate recipes using their voice — directly on
-            your site.
+            The <code className="text-gray-800 font-lurpak-regular">&lt;handsfree-cooking&gt;</code> web component
+            lets readers navigate recipes hands-free on your site using the browser&apos;s Web Speech API.
           </p>
         </div>
       </div>

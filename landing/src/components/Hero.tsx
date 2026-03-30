@@ -1,4 +1,5 @@
 import { Play } from 'lucide-react';
+import { GITHUB_REPO_URL } from '../site';
 import { useState } from 'react';
 import Stats from './Stats';
 
@@ -10,19 +11,23 @@ export default function Hero() {
   };
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-gray-50 to-white pt-24 pb-16 md:pt-32 md:pb-24 lg:pt-40 lg:pb-32">
+    <section className="relative overflow-hidden bg-gradient-to-b from-gray-50 to-white pt-24 pb-6 md:pt-32 md:pb-24 lg:pt-40 lg:pb-32">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto text-center animate-fade-in">
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-lurpak-bold text-gray-900 mb-6 md:mb-8 leading-[1.1] tracking-tight">
             Turn your recipes into hands-free cooking experiences
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-gray-600 mb-4 md:mb-5 font-lurpak-light leading-relaxed max-w-4xl mx-auto">
-            Add voice control to your recipes in minutes. No app. No rebuild.
+            Drop in the open-source <code className="text-gray-800 font-lurpak-regular">&lt;handsfree-cooking&gt;</code>{' '}
+            web component. Voice recognition uses the browser&apos;s Web Speech API—no separate cooking app and no
+            speech API keys to manage yourself.
           </p>
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4 mb-12 md:mb-16 lg:mb-20">
             <a
-              href="#get-started"
+              href={GITHUB_REPO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-full sm:w-auto bg-brand text-white px-8 md:px-10 py-4 md:py-5 rounded-xl text-base md:text-lg font-lurpak-regular hover:bg-brand-dark transition-all hover:scale-105 shadow-lg hover:shadow-xl min-h-[56px] flex items-center justify-center"
             >
               Get the code
@@ -36,7 +41,7 @@ export default function Hero() {
             </button>
           </div>
 
-          <div className="relative rounded-xl md:rounded-2xl overflow-hidden shadow-2xl animate-slide-up">
+          <div className="relative rounded-xl md:rounded-2xl overflow-hidden shadow-2xl animate-slide-up mb-12 md:mb-16 lg:mb-20">
             {!videoLoaded ? (
               <button
                 onClick={handlePlayClick}
@@ -71,7 +76,7 @@ export default function Hero() {
 
         </div>
 
-        <div className="mt-[300px]">
+        <div className="lg:mt-[300px]">
           <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-lurpak-bold text-gray-900 mb-12 md:mb-16 text-center leading-tight tracking-tight">
             Food Blogs and their readers love it
           </h2>

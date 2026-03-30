@@ -1,4 +1,5 @@
 import { Github, FileText, Mic } from 'lucide-react';
+import { GITHUB_REPO_URL } from '../site';
 
 export default function OpenSource() {
   const features = [
@@ -8,7 +9,7 @@ export default function OpenSource() {
     },
     {
       icon: Mic,
-      text: 'Powered by Google Voice API',
+      text: 'Uses the Web Speech API in the browser',
     },
     {
       icon: Github,
@@ -40,7 +41,7 @@ export default function OpenSource() {
           </div>
 
           <a
-            href="https://github.com"
+            href={GITHUB_REPO_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2 bg-gray-900 text-white px-8 md:px-10 py-4 md:py-5 rounded-xl text-base md:text-lg font-lurpak-regular hover:bg-gray-800 transition-all hover:scale-105 shadow-lg hover:shadow-xl min-h-[56px]"

@@ -1,3 +1,5 @@
+import { GITHUB_README_URL, GITHUB_REPO_URL } from '../site';
+
 export default function Footer() {
   return (
     <footer className="bg-brand py-10 md:py-12">
@@ -5,7 +7,7 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 md:gap-8">
           <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 md:gap-8">
             <a
-              href="https://github.com"
+              href={GITHUB_REPO_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="text-white/80 hover:text-white transition-colors min-h-[44px] flex items-center font-lurpak-regular text-sm md:text-base"
@@ -13,7 +15,9 @@ export default function Footer() {
               GitHub
             </a>
             <a
-              href="#"
+              href={GITHUB_README_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               className="text-white/80 hover:text-white transition-colors min-h-[44px] flex items-center font-lurpak-regular text-sm md:text-base"
             >
               Documentation
