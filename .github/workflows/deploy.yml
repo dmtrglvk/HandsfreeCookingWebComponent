@@ -28,16 +28,36 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Install dependencies
+      # ── Build web component ──────────────────────────────────────────────
+      - name: Install web component dependencies
         run: npm ci
 
-      - name: Build
+      - name: Build web component
         run: npm run build
+
+      # ── Build landing page ───────────────────────────────────────────────
+      - name: Install landing dependencies
+        run: npm ci
+        working-directory: landing
+
+      - name: Build landing page
+        run: npm run build
+        working-directory: landing
+
+      # ── Merge outputs into a single deploy folder ────────────────────────
+      - name: Combine outputs
+        run: |
+          mkdir -p _site
+          # Landing page goes to root (index.html + assets)
+          cp -r landing/dist/. _site/
+          # Web component scripts go alongside at root
+          cp dist/handsfree-cooking.js _site/
+          cp dist/handsfree-cooking.iife.js _site/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: _site
 
   deploy:
     needs: build
