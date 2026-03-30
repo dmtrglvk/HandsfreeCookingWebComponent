@@ -31,13 +31,20 @@ export default function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           <div className="flex items-center">
-            <a href="#" className="flex items-center">
+            <a href="#" className="hidden lg:flex items-center">
               <img
                 src="./Website.png"
                 alt="Hands Free Cooking"
                 className="h-8 md:h-10"
               />
             </a>
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="lg:hidden p-2 text-brand hover:bg-brand/10 rounded-lg transition-colors"
+              aria-label="Toggle menu"
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
 
           <div className="hidden lg:flex items-center space-x-8">
@@ -60,14 +67,6 @@ export default function Navigation() {
       >
         Get the code
       </a>
-
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="lg:hidden p-2 text-brand hover:bg-brand/10 rounded-lg transition-colors mr-32"
-            aria-label="Toggle menu"
-          >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
 
       {isMenuOpen && (
         <div className="lg:hidden bg-white border-t border-gray-100 shadow-lg animate-fade-in">
