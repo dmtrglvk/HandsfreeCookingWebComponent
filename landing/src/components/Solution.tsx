@@ -17,7 +17,7 @@ export default function Solution() {
 
           <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-gray-600 font-lurpak-light leading-relaxed max-w-4xl mx-auto">
             The <code className="text-gray-800 font-lurpak-regular">&lt;handsfree-cooking&gt;</code> web component
-            lets readers navigate recipes hands-free on your site using the browser&apos;s Web Speech API.
+            lets readers navigate recipes handsfree on your site using the browser&apos;s Web Speech API.
           </p>
         </div>
       </div>

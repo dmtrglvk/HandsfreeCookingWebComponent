@@ -58,18 +58,25 @@ export default function Navigation() {
                 {link.label}
               </a>
             ))}
+            <a
+                href={GITHUB_REPO_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-brand text-white px-6 py-2.5 rounded-lg hover:bg-brand-dark transition-all hover:scale-105 font-lurpak-regular shadow-md min-h-[44px] flex items-center"
+            >
+              Get the code
+            </a>
           </div>
+          <a
+              href={GITHUB_REPO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="lg:hidden bg-brand text-white px-6 py-2.5 rounded-lg hover:bg-brand-dark transition-all hover:scale-105 font-lurpak-regular shadow-md min-h-[44px] flex items-center"
+          >
+            Get the code
+          </a>
         </div>
       </div>
-
-      <a
-        href={GITHUB_REPO_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed top-4 right-4 sm:right-6 lg:right-8 z-[60] bg-brand text-white px-6 py-2.5 rounded-lg hover:bg-brand-dark transition-all hover:scale-105 font-lurpak-regular shadow-md min-h-[44px] flex items-center"
-      >
-        Get the code
-      </a>
 
       {isMenuOpen && (
         <div className="lg:hidden bg-white border-t border-gray-100 shadow-lg animate-fade-in">

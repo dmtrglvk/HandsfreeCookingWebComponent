@@ -15,7 +15,7 @@ export default function Hero() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto text-center animate-fade-in">
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-lurpak-bold text-gray-900 mb-6 md:mb-8 leading-[1.1] tracking-tight">
-            Turn your recipes into hands-free cooking experiences
+            Turn your recipes into handsfree cooking experiences
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-gray-600 mb-4 md:mb-5 font-lurpak-light leading-relaxed max-w-4xl mx-auto">
             Drop in the open-source <code className="text-gray-800 font-lurpak-regular">&lt;handsfree-cooking&gt;</code>{' '}

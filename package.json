@@ -1,7 +1,7 @@
 {
   "name": "handsfree-cooking",
   "version": "1.0.0",
-  "description": "A Web Component for hands-free voice-controlled recipe navigation using the Web Speech API",
+  "description": "A Web Component for handsfree voice-controlled recipe navigation using the Web Speech API",
   "type": "module",
   "main": "dist/handsfree-cooking.iife.js",
   "module": "dist/handsfree-cooking.js",

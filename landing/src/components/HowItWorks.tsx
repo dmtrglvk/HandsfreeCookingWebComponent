@@ -14,7 +14,7 @@ export default function HowItWorks() {
     },
     {
       icon: Check,
-      title: 'Recipes become hands-free',
+      title: 'Recipes become handsfree',
       description: 'Works instantly on every recipe',
     },
   ];
