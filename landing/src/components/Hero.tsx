@@ -19,7 +19,7 @@ export default function Hero() {
           </h1>
           <p className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-gray-600 mb-4 md:mb-5 font-lurpak-light leading-relaxed max-w-4xl mx-auto">
             Drop in the open-source <code className="text-gray-800 font-lurpak-regular">&lt;handsfree-cooking&gt;</code>{' '}
-            web component. Voice recognition uses the browser&apos;s Web Speech API—no separate cooking app and no
+            web component. Voice recognition uses the browser&apos;s Web Speech API-no separate cooking app and no
             speech API keys to manage yourself.
           </p>
 
