@@ -911,7 +911,7 @@ export default {
 
 .hf-button--skin {
   aspect-ratio: 394 / 116;
-  padding: 30px 0;
+  padding: 30px;
   justify-content: center;
   font-size: 20px;
   border: 0;
