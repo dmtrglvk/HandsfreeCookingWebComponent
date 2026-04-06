@@ -1,5 +1,8 @@
 <template>
-  <div class="hf-root">
+  <div
+    class="hf-root"
+    :style="rootStyle"
+  >
     <div class="hf-trigger">
       <div class="hf-intro-row">
         <span class="hf-intro-label">
@@ -305,6 +308,10 @@ export default {
     commands: {
       type: String,
       default: ''
+    },
+    buttonSkinUrl: {
+      type: String,
+      default: ''
     }
   },
   setup(props) {
@@ -357,6 +364,12 @@ export default {
       ingredients: props.ingredientsSelector,
       instructions: props.instructionsSelector
     }))
+
+    const rootStyle = computed(() => (
+      props.buttonSkinUrl
+        ? { '--hf-button-skin-image': `url("${props.buttonSkinUrl}")` }
+        : {}
+    ))
 
     const selectedLanguage = computed(() =>
       props.lang || document.documentElement.lang || 'en'
@@ -752,6 +765,7 @@ export default {
       isTooltipVisible,
       mergedTranslations,
       mergedCommands,
+      rootStyle,
       tooltip,
       isLoading,
       statusAnnouncement,
@@ -897,13 +911,13 @@ export default {
 
 .hf-button--skin {
   aspect-ratio: 394 / 116;
-  padding: 25px 0 30px;
+  padding: 30px 0;
   justify-content: center;
-  font-size: var(--hf-font-size-large);
+  font-size: 20px;
   border: 0;
   color: #001f5a;
   background-color: transparent;
-  background-image: url(./assets/btn-skin.png);
+  background-image: var(--hf-button-skin-image, url(./assets/btn-skin.png));
   background-repeat: no-repeat;
   background-position: center;
   background-size: 100% 100%;

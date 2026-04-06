@@ -208,6 +208,7 @@ The voice commands "next step" / "previous step" will scroll between elements ma
 | `steps-selector` | `.recipe-step` | CSS selector matching **each** recipe step element |
 | `ingredients-selector` | `#ingredients` | CSS selector for the ingredients section heading/container |
 | `instructions-selector` | `#instructions` | CSS selector for the instructions section heading/container |
+| `button-skin-url` | *(built-in skin image)* | Optional background image URL for buttons using the `hf-button--skin` class |
 | `translations` | *(built-in English)* | JSON string to override any UI text (see below) |
 | `commands` | *(built-in English)* | JSON string to override voice command aliases (see below) |
 
@@ -487,6 +488,22 @@ handsfree-cooking {
 }
 ```
 
+### Custom button skin
+
+The primary trigger buttons use the `hf-button--skin` class. You can provide a custom background image with the `button-skin-url` attribute. If you do not set it, the component falls back to the built-in skin image.
+
+```html
+<handsfree-cooking
+  lang="en"
+  steps-selector=".recipe-step"
+  ingredients-selector="#ingredients"
+  instructions-selector="#instructions"
+  button-skin-url="https://example.com/brand/lets-cook-button.png"
+></handsfree-cooking>
+```
+
+This URL is applied as the button background image for `.hf-button--skin`.
+
 ---
 
 ## Framework examples
@@ -563,11 +580,12 @@ Just include the script tag and the HTML element -- no build step needed.
 
 ```bash
 npm install
-npm run dev      # Dev server -- open http://localhost:5173
-npm run build    # Produces dist/handsfree-cooking.js + dist/handsfree-cooking.iife.js
+npm run dev        # Dev server for the demo page at http://localhost:5173
+npm run build      # Produces dist/handsfree-cooking.js + dist/handsfree-cooking.iife.js
+npm run build:demo # Produces dist-demo/ for the demo site (used by GitHub Pages)
 ```
 
-The root `index.html` is a demo recipe page for local testing.
+The root `index.html` is a demo recipe page for local testing. GitHub Pages deploys the built demo app from `dist-demo/`, so the hosted page matches what you see in `npm run dev`.
 
 ---
 
