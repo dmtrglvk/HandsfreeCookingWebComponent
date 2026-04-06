@@ -39,7 +39,7 @@
       </div>
       <button
         v-if="stage !== 'listening'"
-        class="hf-button hf-button--handsfree"
+        class="hf-button hf-button--handsfree hf-button--skin"
         @click="startHandsFreeFlow"
       >
         <HfIcon
@@ -50,7 +50,7 @@
       </button>
       <button
         v-if="stage === 'listening'"
-        class="hf-button hf-button--handsfree"
+        class="hf-button hf-button--handsfree hf-button--skin"
         @click="finishHandsFreeFlow"
       >
         <HfIcon
@@ -863,12 +863,12 @@ export default {
   margin-inline-end: var(--hf-spacing-xs);
 }
 
-.hf-button:hover {
+.hf-button:not(.hf-button--skin):hover {
   background-color: var(--hf-color-primary);
   color: var(--hf-color-bg);
 }
 
-.hf-button:hover .hf-icon svg {
+.hf-button:not(.hf-button--skin):hover .hf-icon svg {
   fill: var(--hf-color-bg);
 }
 
@@ -893,6 +893,34 @@ export default {
 
 .hf-button--handsfree .hf-icon {
   margin-inline-end: var(--hf-spacing-xxs);
+}
+
+.hf-button--skin {
+  aspect-ratio: 394 / 116;
+  padding: 25px 0 30px;
+  justify-content: center;
+  font-size: var(--hf-font-size-large);
+  border: 0;
+  color: #001f5a;
+  background-color: transparent;
+  background-image: url(./assets/btn-skin.png);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  line-height: 0;
+  transition: transform 200ms ease-out, opacity 200ms ease-out;
+}
+
+.hf-button--skin:hover {
+  background-color: transparent;
+  color: inherit;
+  transform: translateY(-1px);
+}
+
+.hf-button--skin:focus-visible {
+  outline: 2px solid #00205b;
+  outline-offset: 4px;
+  border-radius: 8px;
 }
 
 /* ---- Icons ---- */

@@ -28,20 +28,23 @@ jobs:
           node-version: 20
           cache: npm
 
-      # ── Build web component ──────────────────────────────────────────────
-      - name: Install web component dependencies
+      # ── Install & build ─────────────────────────────────────────────────────
+      - name: Install dependencies
         run: npm ci
 
-      - name: Build web component
+      - name: Build library bundle
         run: npm run build
 
-      # ── Prepare deploy folder ──────────────────────────────────────────────
-      - name: Combine outputs
+      - name: Build demo site (same as npm run dev)
+        run: npm run build:demo
+        env:
+          # GitHub Pages project URL: https://<owner>.github.io/<repo>/
+          BASE_URL: /${{ github.event.repository.name }}/
+
+      - name: Prepare GitHub Pages artifact
         run: |
           mkdir -p _site
-          # Web component scripts go to root
-          cp dist/handsfree-cooking.js _site/
-          cp dist/handsfree-cooking.iife.js _site/
+          cp -r dist-demo/. _site/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
