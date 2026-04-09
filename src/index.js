@@ -1,9 +1,4 @@
-import { defineCustomElement } from 'vue'
-import HandsfreeCooking from './HandsfreeCooking.ce.vue'
-
-const HandsfreeCookingElement = defineCustomElement(HandsfreeCooking, {
-  shadowRoot: true
-})
+import { HandsfreeCookingElement } from './HandsfreeCooking.js'
 
 if (!customElements.get('handsfree-cooking')) {
   customElements.define('handsfree-cooking', HandsfreeCookingElement)

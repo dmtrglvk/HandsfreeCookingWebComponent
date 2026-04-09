@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { createVoiceState } from '../composables/useVoiceState'
+import { createVoiceState } from '../state'
 
 describe('createVoiceState', () => {
   it('returns initial state with all fields null/false/true', () => {
@@ -44,5 +44,14 @@ describe('createVoiceState', () => {
     expect(state.isPopupOpened).toBe(false)
     togglePopupState(true)
     expect(state.isPopupOpened).toBe(true)
+  })
+
+  it('calls onChange callback when state changes', () => {
+    let callCount = 0
+    const { setStage, toggleListening, togglePopupState } = createVoiceState(() => { callCount++ })
+    setStage('listening')
+    toggleListening(true)
+    togglePopupState(false)
+    expect(callCount).toBe(3)
   })
 })

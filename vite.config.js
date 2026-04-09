@@ -1,5 +1,4 @@
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
 export default defineConfig(({ mode }) => ({
@@ -11,11 +10,6 @@ export default defineConfig(({ mode }) => ({
       '@': path.resolve(__dirname, 'src')
     }
   },
-  plugins: [
-    vue({
-      customElement: true
-    })
-  ],
   build: {
     lib: {
       entry: path.resolve(__dirname, 'src/index.js'),

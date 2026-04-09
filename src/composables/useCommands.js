@@ -1,22 +1,20 @@
-import { computed, watch, isRef, toValue } from 'vue'
 import { debounce } from '@/utils/debounce'
 
 const SCROLL_AMOUNT = 300
 
-export default function useCommands(modelRef, selectorsRef, voiceState, emitEvent) {
+export default function useCommands(getModel, getSelectors, voiceState, emitEvent) {
   let instructionsElement = null
   let ingredientsElement = null
   let steps = []
   let currentStepIndex = -1
+  let lastSelectors = null
 
   const getOffset = () => window.innerWidth < 768 ? 75 : 60
 
   const { setStage, toggleListening, togglePopupState } = voiceState
 
-  const resolveSelectors = () => toValue(selectorsRef)
-
   const cacheElements = () => {
-    const selectors = resolveSelectors()
+    const selectors = getSelectors()
     if (selectors.instructions) {
       instructionsElement = document.querySelector(selectors.instructions)
     }
@@ -26,22 +24,13 @@ export default function useCommands(modelRef, selectorsRef, voiceState, emitEven
     if (selectors.steps) {
       steps = Array.from(document.querySelectorAll(selectors.steps))
     }
+    lastSelectors = selectors
   }
 
   const debouncedCacheElements = debounce(cacheElements, 300)
 
   const observer = new MutationObserver(debouncedCacheElements)
-
   observer.observe(document.body, { childList: true, subtree: true })
-
-  if (isRef(selectorsRef)) {
-    watch(selectorsRef, () => {
-      instructionsElement = null
-      ingredientsElement = null
-      steps = []
-      cacheElements()
-    })
-  }
 
   const scrollToElement = (element) => {
     const offset = getOffset()
@@ -66,9 +55,22 @@ export default function useCommands(modelRef, selectorsRef, voiceState, emitEven
     }
   }
 
-  const commands = computed(() => {
-    const model = toValue(modelRef)
+  const getCommands = () => {
+    const model = getModel()
     if (!model) return {}
+
+    const selectors = getSelectors()
+    if (
+      !lastSelectors ||
+      lastSelectors.steps !== selectors.steps ||
+      lastSelectors.ingredients !== selectors.ingredients ||
+      lastSelectors.instructions !== selectors.instructions
+    ) {
+      instructionsElement = null
+      ingredientsElement = null
+      steps = []
+      cacheElements()
+    }
 
     const cmds = {}
     const addCommand = (aliases, action) => {
@@ -147,7 +149,7 @@ export default function useCommands(modelRef, selectorsRef, voiceState, emitEven
     })
 
     return cmds
-  })
+  }
 
-  return { commands, destroy: () => observer.disconnect() }
+  return { getCommands, destroy: () => observer.disconnect() }
 }

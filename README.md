@@ -4,164 +4,56 @@ A drop-in Web Component that adds voice-controlled recipe navigation to **any we
 
 ---
 
+## Table of Contents
+
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Framework Guides](#framework-guides)
+  - [React](#react)
+  - [Next.js](#nextjs)
+  - [Vue 3](#vue-3)
+  - [Nuxt 3](#nuxt-3)
+  - [Angular](#angular)
+  - [Svelte / SvelteKit](#svelte--sveltekit)
+  - [Astro](#astro)
+  - [Static HTML / WordPress / Shopify](#static-html--wordpress--shopify)
+- [Attributes](#attributes)
+- [Voice Commands](#voice-commands)
+- [Translations](#translations)
+- [Events](#events)
+- [Styling](#styling)
+- [User Flow](#user-flow)
+- [Development](#development)
+- [Browser Support](#browser-support)
+- [License](#license)
+
+---
+
 ## Installation
 
-### Option A: Script tag (simplest)
-
-Download `dist/handsfree-cooking.iife.js` (or host it on a CDN) and add it to your page:
-
-```html
-<script src="handsfree-cooking.iife.js"></script>
-```
-
-### Option B: ES module / npm
+### npm
 
 ```bash
-npm install github:dmtrglvk/HandsfreeCookingWebComponent
+npm install handsfree-cooking
 ```
 
-```javascript
-import 'handsfree-cooking'
+### CDN — no install needed
+
+```html
+<script src="https://unpkg.com/handsfree-cooking/dist/handsfree-cooking.iife.js"></script>
+```
+
+### Self-hosted
+
+Download `dist/handsfree-cooking.iife.js` from the [npm package](https://www.npmjs.com/package/handsfree-cooking) and serve it yourself:
+
+```html
+<script src="/path/to/handsfree-cooking.iife.js"></script>
 ```
 
 ---
 
-## Bundler Configuration
-
-When using `<handsfree-cooking>` inside templates compiled by a framework (Vue, React, etc.), the bundler or framework compiler may need to know that it is a **native Custom Element**, not a framework component.
-
-### Vite + Vue
-
-In `vite.config.js`, configure the Vue plugin's `compilerOptions`:
-
-```javascript
-import vue from '@vitejs/plugin-vue'
-
-export default defineConfig({
-  plugins: [
-    vue({
-      template: {
-        compilerOptions: {
-          isCustomElement: (tag) => tag === 'handsfree-cooking'
-        }
-      }
-    })
-  ]
-})
-```
-
-### Webpack + Vue (vue-loader)
-
-In `vue.config.js` or your webpack config where `vue-loader` is configured:
-
-```javascript
-module.exports = {
-  chainWebpack: (config) => {
-    config.module
-      .rule('vue')
-      .use('vue-loader')
-      .tap((options) => ({
-        ...options,
-        compilerOptions: {
-          isCustomElement: (tag) => tag === 'handsfree-cooking'
-        }
-      }))
-  }
-}
-```
-
-### Storybook (Vue 3 + Vite)
-
-In `.storybook/main.js`, replace the default Vue plugin in `viteFinal`:
-
-```javascript
-import vue from '@vitejs/plugin-vue'
-
-export default {
-  framework: '@storybook/vue3-vite',
-  viteFinal: async (config) => {
-    config.plugins = config.plugins
-      .flat()
-      .filter((p) => p?.name !== 'vite:vue')
-
-    config.plugins.push(
-      vue({
-        template: {
-          compilerOptions: {
-            isCustomElement: (tag) => tag === 'handsfree-cooking'
-          }
-        }
-      })
-    )
-
-    return config
-  }
-}
-```
-
-Also import the component in `.storybook/preview.js`:
-
-```javascript
-import 'handsfree-cooking'
-```
-
-### React / Next.js / Angular
-
-No bundler configuration needed. Custom elements work natively in JSX and Angular templates.
-
-### Static HTML / WordPress / Shopify
-
-No configuration needed. Just include the script tag and the HTML element.
-
----
-
-## Usage
-
-### 1. Add the component to your recipe page
-
-Place the `<handsfree-cooking>` element on your page. It renders a "Let's cook" button and a floating popup widget. Point it at your recipe markup using CSS selectors:
-
-```html
-<handsfree-cooking
-  lang="en"
-  steps-selector=".recipe-step"
-  ingredients-selector="#ingredients"
-  instructions-selector="#instructions"
-></handsfree-cooking>
-```
-
-### 2. Make sure your HTML has matching elements
-
-The component looks for elements on **your page** (outside the component) using the selectors you provide. For example:
-
-```html
-<h2 id="ingredients">Ingredients</h2>
-<ul>
-  <li>200g flour</li>
-  <li>2 eggs</li>
-</ul>
-
-<h2 id="instructions">Instructions</h2>
-
-<div class="recipe-step">
-  <strong>Step 1</strong>
-  Mix the flour and eggs.
-</div>
-
-<div class="recipe-step">
-  <strong>Step 2</strong>
-  Heat the pan.
-</div>
-
-<div class="recipe-step">
-  <strong>Step 3</strong>
-  Cook and serve.
-</div>
-```
-
-The voice commands "next step" / "previous step" will scroll between elements matching `steps-selector`. "Go to ingredients" scrolls to the element matching `ingredients-selector`, etc.
-
-### 3. Full minimal example
+## Quick Start
 
 ```html
 <!DOCTYPE html>
@@ -169,7 +61,7 @@ The voice commands "next step" / "previous step" will scroll between elements ma
 <head>
   <meta charset="UTF-8">
   <title>My Recipe</title>
-  <script src="handsfree-cooking.iife.js"></script>
+  <script src="https://unpkg.com/handsfree-cooking/dist/handsfree-cooking.iife.js"></script>
 </head>
 <body>
 
@@ -198,6 +90,443 @@ The voice commands "next step" / "previous step" will scroll between elements ma
 </html>
 ```
 
+The component renders a **"Handsfree cooking"** button. When clicked it requests microphone access and starts voice-controlled navigation.
+
+---
+
+## Framework Guides
+
+### React
+
+Import the package once — at the top of your entry file (`main.tsx` / `index.tsx`) or directly in the component that uses it.
+
+```tsx
+// main.tsx (or the component file)
+import 'handsfree-cooking'
+```
+
+Use the element in JSX like any HTML element. React treats unknown tags as custom elements automatically:
+
+```tsx
+function RecipePage() {
+  return (
+    <div>
+      <handsfree-cooking
+        lang="en"
+        steps-selector=".step"
+        ingredients-selector="#ingredients"
+        instructions-selector="#method"
+      />
+
+      <h2 id="ingredients">Ingredients</h2>
+      {/* ... */}
+
+      <h2 id="method">Method</h2>
+      <div className="step">Step 1: ...</div>
+      <div className="step">Step 2: ...</div>
+    </div>
+  )
+}
+```
+
+#### TypeScript — element type declaration
+
+If TypeScript complains about `<handsfree-cooking>` not being a known JSX element, add a declaration file (e.g. `custom-elements.d.ts`) to your project:
+
+```ts
+declare namespace JSX {
+  interface IntrinsicElements {
+    'handsfree-cooking': React.DetailedHTMLProps<
+      React.HTMLAttributes<HTMLElement> & {
+        lang?: string
+        'steps-selector'?: string
+        'ingredients-selector'?: string
+        'instructions-selector'?: string
+        'button-skin-url'?: string
+        translations?: string
+        commands?: string
+      },
+      HTMLElement
+    >
+  }
+}
+```
+
+---
+
+### Next.js
+
+Web Speech API and `customElements` are **browser-only APIs** — they don't exist in the Node.js server environment. You must lazy-load the component on the client side.
+
+#### App Router (Next.js 13+)
+
+Create a wrapper client component:
+
+```tsx
+// components/HandsfreeCooking.tsx
+'use client'
+
+import { useEffect } from 'react'
+
+export default function HandsfreeCooking(props: {
+  lang?: string
+  stepsSelector?: string
+  ingredientsSelector?: string
+  instructionsSelector?: string
+}) {
+  useEffect(() => {
+    import('handsfree-cooking')
+  }, [])
+
+  return (
+    <handsfree-cooking
+      lang={props.lang ?? 'en'}
+      steps-selector={props.stepsSelector ?? '.step'}
+      ingredients-selector={props.ingredientsSelector ?? '#ingredients'}
+      instructions-selector={props.instructionsSelector ?? '#method'}
+    />
+  )
+}
+```
+
+Use it in any Server or Client component:
+
+```tsx
+// app/recipes/[slug]/page.tsx
+import HandsfreeCooking from '@/components/HandsfreeCooking'
+
+export default function RecipePage() {
+  return (
+    <main>
+      <HandsfreeCooking stepsSelector=".step" />
+      {/* ... recipe content ... */}
+    </main>
+  )
+}
+```
+
+#### Pages Router (Next.js 12 and earlier)
+
+Use `next/dynamic` with `ssr: false`:
+
+```tsx
+// pages/recipes/[slug].tsx
+import dynamic from 'next/dynamic'
+
+const HandsfreeCooking = dynamic(
+  () => import('../components/HandsfreeCooking'),
+  { ssr: false }
+)
+
+export default function RecipePage() {
+  return (
+    <main>
+      <HandsfreeCooking stepsSelector=".step" />
+      {/* ... recipe content ... */}
+    </main>
+  )
+}
+```
+
+---
+
+### Vue 3
+
+Import the package in your entry file or directly in the component:
+
+```js
+// main.js
+import { createApp } from 'vue'
+import 'handsfree-cooking'
+import App from './App.vue'
+
+createApp(App).mount('#app')
+```
+
+#### Tell Vue to skip the element
+
+Vue's template compiler will warn about unknown elements unless you tell it that `<handsfree-cooking>` is a native custom element. Add this to `vite.config.js`:
+
+```js
+// vite.config.js
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+
+export default defineConfig({
+  plugins: [
+    vue({
+      template: {
+        compilerOptions: {
+          isCustomElement: (tag) => tag === 'handsfree-cooking'
+        }
+      }
+    })
+  ]
+})
+```
+
+Use it in a template:
+
+```vue
+<template>
+  <handsfree-cooking
+    lang="en"
+    steps-selector=".step"
+    ingredients-selector="#ingredients"
+    instructions-selector="#method"
+  />
+
+  <h2 id="ingredients">Ingredients</h2>
+  <!-- ... -->
+
+  <h2 id="method">Method</h2>
+  <div class="step">Step 1: ...</div>
+  <div class="step">Step 2: ...</div>
+</template>
+```
+
+#### Webpack + Vue (vue-loader)
+
+In `vue.config.js`:
+
+```js
+module.exports = {
+  chainWebpack: (config) => {
+    config.module
+      .rule('vue')
+      .use('vue-loader')
+      .tap((options) => ({
+        ...options,
+        compilerOptions: {
+          isCustomElement: (tag) => tag === 'handsfree-cooking'
+        }
+      }))
+  }
+}
+```
+
+---
+
+### Nuxt 3
+
+Create a client-only plugin so the component is registered in the browser only:
+
+```ts
+// plugins/handsfree-cooking.client.ts
+export default defineNuxtPlugin(() => {
+  import('handsfree-cooking')
+})
+```
+
+Configure the Vue compiler to skip the element in `nuxt.config.ts`:
+
+```ts
+// nuxt.config.ts
+export default defineNuxtConfig({
+  vue: {
+    compilerOptions: {
+      isCustomElement: (tag) => tag === 'handsfree-cooking'
+    }
+  }
+})
+```
+
+Use it in any page or component wrapped in `<ClientOnly>` (extra guard for SSR):
+
+```vue
+<template>
+  <ClientOnly>
+    <handsfree-cooking
+      lang="en"
+      steps-selector=".step"
+      ingredients-selector="#ingredients"
+      instructions-selector="#method"
+    />
+  </ClientOnly>
+
+  <h2 id="ingredients">Ingredients</h2>
+  <!-- ... -->
+</template>
+```
+
+---
+
+### Angular
+
+Import the package once in your `AppModule` (or a standalone component's `imports` for Angular 17+):
+
+```ts
+// app.module.ts
+import 'handsfree-cooking'
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core'
+import { BrowserModule } from '@angular/platform-browser'
+import { AppComponent } from './app.component'
+
+@NgModule({
+  declarations: [AppComponent],
+  imports: [BrowserModule],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],   // ← required
+  bootstrap: [AppComponent]
+})
+export class AppModule {}
+```
+
+Without `CUSTOM_ELEMENTS_SCHEMA`, Angular's template compiler throws an error for unknown elements.
+
+Use it in a template:
+
+```html
+<!-- recipe.component.html -->
+<handsfree-cooking
+  lang="en"
+  steps-selector=".step"
+  ingredients-selector="#ingredients"
+  instructions-selector="#method"
+></handsfree-cooking>
+
+<h2 id="ingredients">Ingredients</h2>
+<!-- ... -->
+
+<h2 id="method">Method</h2>
+<div class="step">Step 1: ...</div>
+<div class="step">Step 2: ...</div>
+```
+
+#### Angular SSR (Angular Universal)
+
+If your app renders on the server, guard the import so it only runs in the browser:
+
+```ts
+// app.module.ts
+import { isPlatformBrowser } from '@angular/common'
+import { PLATFORM_ID, inject } from '@angular/core'
+
+if (isPlatformBrowser(inject(PLATFORM_ID))) {
+  import('handsfree-cooking')
+}
+```
+
+Or use Angular's `afterNextRender` lifecycle hook inside the component:
+
+```ts
+import { afterNextRender } from '@angular/core'
+
+constructor() {
+  afterNextRender(() => {
+    import('handsfree-cooking')
+  })
+}
+```
+
+---
+
+### Svelte / SvelteKit
+
+#### Svelte (client-only)
+
+```svelte
+<script>
+  import { onMount } from 'svelte'
+
+  onMount(() => {
+    import('handsfree-cooking')
+  })
+</script>
+
+<handsfree-cooking
+  lang="en"
+  steps-selector=".step"
+  ingredients-selector="#ingredients"
+  instructions-selector="#method"
+/>
+
+<h2 id="ingredients">Ingredients</h2>
+<!-- ... -->
+
+<h2 id="method">Method</h2>
+<div class="step">Step 1: ...</div>
+<div class="step">Step 2: ...</div>
+```
+
+#### SvelteKit (SSR-safe)
+
+In SvelteKit, `onMount` only runs in the browser, so the same pattern above is already SSR-safe. Alternatively, import it inside a `+page.svelte` using `browser` from `$app/environment`:
+
+```svelte
+<script>
+  import { browser } from '$app/environment'
+  if (browser) import('handsfree-cooking')
+</script>
+```
+
+---
+
+### Astro
+
+For a static recipe page, include the CDN script and the element directly in the Astro file:
+
+```astro
+---
+// src/pages/recipe.astro
+---
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>My Recipe</title>
+    <script src="https://unpkg.com/handsfree-cooking/dist/handsfree-cooking.iife.js" is:inline></script>
+  </head>
+  <body>
+
+    <handsfree-cooking
+      lang="en"
+      steps-selector=".step"
+      ingredients-selector="#ingredients"
+      instructions-selector="#method"
+    ></handsfree-cooking>
+
+    <h2 id="ingredients">Ingredients</h2>
+    <!-- ... -->
+
+    <h2 id="method">Method</h2>
+    <div class="step">Step 1: ...</div>
+    <div class="step">Step 2: ...</div>
+
+  </body>
+</html>
+```
+
+To import from npm instead, add a `<script>` tag with `type="module"`:
+
+```astro
+<script>
+  import 'handsfree-cooking'
+</script>
+```
+
+Astro bundles it automatically via Vite — no extra configuration needed.
+
+---
+
+### Static HTML / WordPress / Shopify
+
+No build step, no configuration. Include the script tag and the element:
+
+```html
+<script src="https://unpkg.com/handsfree-cooking/dist/handsfree-cooking.iife.js"></script>
+
+<handsfree-cooking
+  lang="en"
+  steps-selector=".step"
+  ingredients-selector="#ingredients"
+  instructions-selector="#method"
+></handsfree-cooking>
+```
+
+For **WordPress**, paste the snippet into your theme's `functions.php` or a Custom HTML block in the Block Editor on the recipe post template.
+
+For **Shopify**, paste the snippet into the appropriate `sections/*.liquid` file or `layout/theme.liquid`.
+
 ---
 
 ## Attributes
@@ -217,8 +546,6 @@ The voice commands "next step" / "previous step" will scroll between elements ma
 ## Voice Commands
 
 ### Built-in defaults (English)
-
-These are the commands users can speak out of the box:
 
 | Action | Accepted phrases |
 |---|---|
@@ -244,7 +571,7 @@ When the user speaks, the component:
    - **Contains** the alias as a whole word = score 1
 3. Picks the best-scoring match (ties broken by longest alias)
 
-This means users don't need to say the exact phrase. Saying "go to the next step please" will still match "next step".
+This means users don't need to say the exact phrase — "go to the next step please" still matches "next step".
 
 ### Customizing commands (other languages / extra aliases)
 
@@ -287,7 +614,7 @@ Available command keys:
 
 ## Translations
 
-Override any UI text by passing a `translations` attribute as a JSON string. You only need to include the keys you want to change -- everything else falls back to the English defaults.
+Override any UI text by passing a `translations` attribute as a JSON string. You only need to include the keys you want to change — everything else falls back to the English defaults.
 
 ```html
 <handsfree-cooking
@@ -389,7 +716,7 @@ The component dispatches `CustomEvent`s that bubble through the DOM. Listen on `
 
 | Event | `detail` | When |
 |---|---|---|
-| `handsfree-activated` | — | User clicks "Let's cook" |
+| `handsfree-activated` | — | User clicks the "Handsfree cooking" button |
 | `handsfree-command` | `{ command }` | A voice command is recognized and executed |
 | `handsfree-error` | `{ error }` | Mic blocked, browser not supported, etc. |
 | `handsfree-state-change` | `{ stage, isListening }` | Stage or listening state changes |
@@ -502,73 +829,15 @@ The primary trigger buttons use the `hf-button--skin` class. You can provide a c
 ></handsfree-cooking>
 ```
 
-This URL is applied as the button background image for `.hf-button--skin`.
-
 ---
 
-## Framework examples
+## User Flow
 
-### React
-
-```jsx
-import 'handsfree-cooking'
-
-function RecipePage() {
-  return (
-    <div>
-      <handsfree-cooking
-        lang="en"
-        steps-selector=".step"
-        ingredients-selector="#ingredients"
-        instructions-selector="#method"
-      />
-
-      <h2 id="ingredients">Ingredients</h2>
-      {/* ... */}
-
-      <h2 id="method">Method</h2>
-      <div className="step">Step 1: ...</div>
-      <div className="step">Step 2: ...</div>
-    </div>
-  )
-}
-```
-
-### Vue
-
-```vue
-<template>
-  <handsfree-cooking
-    lang="en"
-    steps-selector=".step"
-    ingredients-selector="#ingredients"
-    instructions-selector="#method"
-  />
-
-  <h2 id="ingredients">Ingredients</h2>
-  <!-- ... -->
-
-  <h2 id="method">Method</h2>
-  <div class="step">Step 1: ...</div>
-  <div class="step">Step 2: ...</div>
-</template>
-```
-
-> **Note:** If `<handsfree-cooking>` is used inside a Vue SFC template, you must configure `isCustomElement` in your build tool -- see [Bundler Configuration](#bundler-configuration) above.
-
-### Static HTML / WordPress / Shopify
-
-Just include the script tag and the HTML element -- no build step needed.
-
----
-
-## User flow
-
-1. User sees the **"Let's cook"** button on the recipe page
+1. User sees the **"Handsfree cooking"** button on the recipe page
 2. Clicking it opens the **introduction popup** explaining the feature
 3. The component requests **microphone access** via the browser
 4. Once allowed, the user navigates the introduction steps, then says **"Let's cook"** (or taps the arrow)
-5. The component enters **listening mode** -- a floating widget shows "Ready for instructions"
+5. The component enters **listening mode** — a floating widget shows "Ready for instructions"
 6. The user speaks commands like **"next step"**, **"go to ingredients"**, **"scroll down"**
 7. When the last step is reached, the widget prompts **"Say 'I'm done'"**
 8. After finishing, a **feedback screen** lets the user vote thumbs up/down
@@ -582,10 +851,11 @@ Just include the script tag and the HTML element -- no build step needed.
 npm install
 npm run dev        # Dev server for the demo page at http://localhost:5173
 npm run build      # Produces dist/handsfree-cooking.js + dist/handsfree-cooking.iife.js
-npm run build:demo # Produces dist-demo/ for the demo site (used by GitHub Pages)
+npm run build:demo # Produces dist-demo/ for the demo site
+npm test           # Run unit tests
 ```
 
-The root `index.html` is a demo recipe page for local testing. GitHub Pages deploys the built demo app from `dist-demo/`, so the hosted page matches what you see in `npm run dev`.
+The root `index.html` is a demo recipe page for local testing.
 
 ---
 

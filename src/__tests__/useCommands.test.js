@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { ref, nextTick } from 'vue'
 import useCommands from '../composables/useCommands'
-import { createVoiceState } from '../composables/useVoiceState'
+import { createVoiceState } from '../state'
 
 function createMockModel() {
   return {
@@ -28,11 +27,11 @@ describe('useCommands', () => {
   })
 
   it('registers all command aliases from the model', () => {
-    const model = ref(createMockModel())
-    const selectors = ref({ steps: '.step', ingredients: '#ing', instructions: '#inst' })
-    const { commands, destroy } = useCommands(model, selectors, voiceState, emitEvent)
+    let model = createMockModel()
+    let selectors = { steps: '.step', ingredients: '#ing', instructions: '#inst' }
+    const { getCommands, destroy } = useCommands(() => model, () => selectors, voiceState, emitEvent)
 
-    const keys = Object.keys(commands.value)
+    const keys = Object.keys(getCommands())
     expect(keys).toContain('next step')
     expect(keys).toContain('next')
     expect(keys).toContain('previous step')
@@ -47,28 +46,21 @@ describe('useCommands', () => {
   })
 
   it('returns empty commands if model is null', () => {
-    const model = ref(null)
-    const selectors = ref({ steps: '.step', ingredients: '#ing', instructions: '#inst' })
-    const { commands, destroy } = useCommands(model, selectors, voiceState, emitEvent)
-
-    expect(Object.keys(commands.value)).toHaveLength(0)
+    const { getCommands, destroy } = useCommands(() => null, () => ({}), voiceState, emitEvent)
+    expect(Object.keys(getCommands())).toHaveLength(0)
     destroy()
   })
 
-  it('rebuilds commands when model ref changes', async () => {
-    const model = ref(createMockModel())
-    const selectors = ref({ steps: '.step', ingredients: '#ing', instructions: '#inst' })
-    const { commands, destroy } = useCommands(model, selectors, voiceState, emitEvent)
+  it('rebuilds commands when model getter returns new value', () => {
+    let model = createMockModel()
+    let selectors = { steps: '.step', ingredients: '#ing', instructions: '#inst' }
+    const { getCommands, destroy } = useCommands(() => model, () => selectors, voiceState, emitEvent)
 
-    expect(Object.keys(commands.value)).toContain('next step')
+    expect(Object.keys(getCommands())).toContain('next step')
 
-    model.value = {
-      ...createMockModel(),
-      nextStep: ['forward', 'onwards']
-    }
-    await nextTick()
+    model = { ...createMockModel(), nextStep: ['forward', 'onwards'] }
 
-    const keys = Object.keys(commands.value)
+    const keys = Object.keys(getCommands())
     expect(keys).toContain('forward')
     expect(keys).toContain('onwards')
     expect(keys).not.toContain('next step')
@@ -77,11 +69,11 @@ describe('useCommands', () => {
   })
 
   it('help command sets stage to listening/help and opens popup', () => {
-    const model = ref(createMockModel())
-    const selectors = ref({ steps: '.step', ingredients: '#ing', instructions: '#inst' })
-    const { commands, destroy } = useCommands(model, selectors, voiceState, emitEvent)
+    let model = createMockModel()
+    let selectors = { steps: '.step', ingredients: '#ing', instructions: '#inst' }
+    const { getCommands, destroy } = useCommands(() => model, () => selectors, voiceState, emitEvent)
 
-    commands.value['help']()
+    getCommands()['help']()
 
     expect(voiceState.state.stage).toBe('listening')
     expect(voiceState.state.subState).toBe('help')
@@ -92,12 +84,12 @@ describe('useCommands', () => {
   })
 
   it('exit command resets to listening stage', () => {
-    const model = ref(createMockModel())
-    const selectors = ref({ steps: '.step', ingredients: '#ing', instructions: '#inst' })
-    const { commands, destroy } = useCommands(model, selectors, voiceState, emitEvent)
+    let model = createMockModel()
+    let selectors = { steps: '.step', ingredients: '#ing', instructions: '#inst' }
+    const { getCommands, destroy } = useCommands(() => model, () => selectors, voiceState, emitEvent)
 
     voiceState.setStage('listening', 'help')
-    commands.value['exit']()
+    getCommands()['exit']()
 
     expect(voiceState.state.stage).toBe('listening')
     expect(voiceState.state.subState).toBe(null)
@@ -106,11 +98,11 @@ describe('useCommands', () => {
   })
 
   it("let's cook command enables listening and sets listening stage", () => {
-    const model = ref(createMockModel())
-    const selectors = ref({ steps: '.step', ingredients: '#ing', instructions: '#inst' })
-    const { commands, destroy } = useCommands(model, selectors, voiceState, emitEvent)
+    let model = createMockModel()
+    let selectors = { steps: '.step', ingredients: '#ing', instructions: '#inst' }
+    const { getCommands, destroy } = useCommands(() => model, () => selectors, voiceState, emitEvent)
 
-    commands.value["let's cook"]()
+    getCommands()["let's cook"]()
 
     expect(voiceState.state.isListening).toBe(true)
     expect(voiceState.state.stage).toBe('listening')
@@ -120,16 +112,16 @@ describe('useCommands', () => {
   })
 
   it('scroll commands call window.scrollBy', () => {
-    const model = ref(createMockModel())
-    const selectors = ref({ steps: '.step', ingredients: '#ing', instructions: '#inst' })
-    const { commands, destroy } = useCommands(model, selectors, voiceState, emitEvent)
+    let model = createMockModel()
+    let selectors = { steps: '.step', ingredients: '#ing', instructions: '#inst' }
+    const { getCommands, destroy } = useCommands(() => model, () => selectors, voiceState, emitEvent)
 
     const scrollBySpy = vi.spyOn(window, 'scrollBy').mockImplementation(() => {})
 
-    commands.value['scroll up']()
+    getCommands()['scroll up']()
     expect(scrollBySpy).toHaveBeenCalledWith({ top: -300, behavior: 'smooth' })
 
-    commands.value['scroll down']()
+    getCommands()['scroll down']()
     expect(scrollBySpy).toHaveBeenCalledWith({ top: 300, behavior: 'smooth' })
 
     scrollBySpy.mockRestore()
