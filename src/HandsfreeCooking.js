@@ -247,7 +247,11 @@ export class HandsfreeCookingElement extends HTMLElement {
     this._boundKeydown = this._handleKeydown.bind(this)
     this._boundClickOutside = this._handleClickOutside.bind(this)
     this._boundContainerClick = this._handleContainerClick.bind(this)
+    this._boundVisibilityChange = this._handleVisibilityChange.bind(this)
     this._outsideClickRaf = null
+
+    // Wake lock
+    this._wakeLock = null
 
     // Resize observer for vote stacking in Finish
     this._resizeObserver = null
@@ -269,6 +273,7 @@ export class HandsfreeCookingElement extends HTMLElement {
 
     this._container.addEventListener('click', this._boundContainerClick)
     document.addEventListener('keydown', this._boundKeydown)
+    document.addEventListener('visibilitychange', this._boundVisibilityChange)
     this._render()
   }
 
@@ -276,6 +281,8 @@ export class HandsfreeCookingElement extends HTMLElement {
     this._container.removeEventListener('click', this._boundContainerClick)
     document.removeEventListener('keydown', this._boundKeydown)
     document.removeEventListener('click', this._boundClickOutside, true)
+    document.removeEventListener('visibilitychange', this._boundVisibilityChange)
+    this._releaseWakeLock()
     if (this._outsideClickRaf) cancelAnimationFrame(this._outsideClickRaf)
     if (this._speechRecognizer) {
       try { this._speechRecognizer.stop() } catch (_e) {}
@@ -636,6 +643,8 @@ export class HandsfreeCookingElement extends HTMLElement {
       return
     }
 
+    this._acquireWakeLock()
+
     if (this._isDebugMode) {
       this._debugInfo.lang = this._getSelectedLanguage()
       this._debugInfo.matched = ''
@@ -801,6 +810,7 @@ export class HandsfreeCookingElement extends HTMLElement {
     this._voiceState.toggleListening(false)
     this._voiceState.togglePopupState(true)
     this._isRecognizing = false
+    this._releaseWakeLock()
   }
 
   _finishHandsFreeFlow() {
@@ -863,6 +873,30 @@ export class HandsfreeCookingElement extends HTMLElement {
           this._closeHandsFreeFlow()
         }
       }
+    }
+  }
+
+  // ---- wake lock ----
+
+  async _acquireWakeLock() {
+    if (!('wakeLock' in navigator)) return
+    try {
+      this._wakeLock = await navigator.wakeLock.request('screen')
+    } catch (e) {
+      console.warn('[HandsfreeCooking] Wake lock not acquired:', e)
+    }
+  }
+
+  async _releaseWakeLock() {
+    if (this._wakeLock) {
+      try { await this._wakeLock.release() } catch (_e) {}
+      this._wakeLock = null
+    }
+  }
+
+  async _handleVisibilityChange() {
+    if (document.visibilityState === 'visible' && this._stage === 'listening') {
+      await this._acquireWakeLock()
     }
   }
 
