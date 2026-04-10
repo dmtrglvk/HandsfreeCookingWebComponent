@@ -115,7 +115,7 @@ const COMPONENT_CSS = `
 .hf-button--solid:hover { background-color: var(--hf-color-bg); color: var(--hf-color-primary); }
 .hf-button--handsfree { padding: var(--hf-spacing-s) var(--hf-spacing-sm); }
 .hf-button--handsfree .hf-icon { margin-inline-end: var(--hf-spacing-xxs); }
-.hf-button--skin { aspect-ratio: 394/116; padding: 30px; justify-content: center; font-size: 20px; border: 0; color: #001f5a; background-color: transparent; background-image: var(--hf-button-skin-image, url(${btnSkinUrl})); background-repeat: no-repeat; background-position: center; background-size: 100% 100%; line-height: 0; transition: transform 200ms ease-out, opacity 200ms ease-out; }
+.hf-button--skin { aspect-ratio: 300/88; padding: 15px 30px 30px; justify-content: center; font-size: 20px; border: 0; color: #001f5a; background-color: transparent; background-image: var(--hf-button-skin-image, url(${btnSkinUrl})); background-repeat: no-repeat; background-position: center; background-size: 100% 100%; line-height: 0; transition: transform 200ms ease-out, opacity 200ms ease-out; }
 .hf-button--skin:hover { background-color: transparent; color: inherit; transform: translateY(-1px); }
 .hf-button--skin:focus-visible { outline: 2px solid #00205b; outline-offset: 4px; border-radius: 8px; }
 .hf-icon { display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; line-height: 0; }
